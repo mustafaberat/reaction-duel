@@ -258,16 +258,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsLanguageSystem => 'Sistem dili';
 
   @override
-  String get settingsSound => 'Ses';
-
-  @override
-  String get settingsSoundHint =>
-      'Puan ve faulde kısa tık. Sinyalde asla ses yok.';
-
-  @override
-  String get settingsHaptics => 'Titreşim';
-
-  @override
   String get settingsColorBlind => 'Renk körü modu';
 
   @override
@@ -279,13 +269,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get settingsAccessibility => 'Erişilebilirlik';
-
-  @override
-  String get settingsSignalVibration => 'Titreşimli sinyal';
-
-  @override
-  String get settingsSignalVibrationHint =>
-      'Erişilebilirlik desteği: sinyal anında telefon titrer. Varsayılan kapalı.';
 
   @override
   String get motionSystem => 'Sistem';

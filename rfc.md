@@ -107,7 +107,6 @@ Maç başında oyuncular **hangi renkte basılacağını seçer**. Orb sırayla 
 
 ### 4.3 (V2 adayları — V1’de yok)
 
-- **Ses modu:** görsel yerine bip ile sinyal (erişilebilirlik).
 - **Ters mod:** renk değişince **basma**, değişmezse 1 s içinde bas.
 - **Turnuva:** 3–4 kişi, sırayla düello, bracket.
 
@@ -155,7 +154,7 @@ Ayrı metin sayfası değil; oyun ekranının **canlı mini demosu**. Ayarlar’
 1. **Karşılıklı otur.** Telefon masada; iki yarı vurgulanır, üst yarı döner. — “Telefonu aranıza koyun. Herkes kendi yarısına basar.”
 2. **Bekle.** Orb nefes alır, el ikonu bekler. — “Ortadaki daire gri iken dokunma.”
 3. **Yeşil = bas!** Orb yeşile döner, el ikonu basar, “+1” ve “243 ms”. — “Renk değişince ilk basan puanı alır.”
-4. **Erken basma.** El ikonu griyken basar, “Erken!” titreşimi, rakibe +1. — “Erken basarsan puan rakibe gider.”
+4. **Erken basma.** El ikonu griyken basar, “Erken!” uyarısı, rakibe +1. — “Erken basarsan puan rakibe gider.”
 5. *(Sadece Hedef Renk modu seçiliyse)* **Tuzak renkler.** Orb maviye döner, el basmaz; sonra hedef renk → bas. — “Sadece seçtiğin renkte bas.”
 
 Son adımda: **Şimdi oyna** (maç ayarlarına) ve **Kapat**.
@@ -175,9 +174,9 @@ Son adımda: **Şimdi oyna** (maç ayarlarına) ve **Kapat**.
 | **Oyun** | §2 |
 | **Pause** | Devam, Yeniden başlat, Ana sayfa (iki yöne okunur) |
 | **Maç sonu** | §6 |
-| **Ayarlar** | Dil (10), ses, titreşim, renk körü modu, Reduce Motion (sistem değerine saygı + override), How to play, gizlilik politikası, sürüm |
+| **Ayarlar** | Dil (10), renk körü modu, Reduce Motion (sistem değerine saygı + override), How to play, gizlilik politikası, sürüm |
 
-Ses: sinyal anında **ses yok** — oyun görsel; ses açık/kapalı ayarı oyunun zorluğunu değiştirmesin. Puan ve foul’da kısa tık sesi. Titreşim: puan alan yarıda kısa, foul’da çift kısa.
+Ses ve titreşim yok — oyun tamamen görsel. Ayarlarda da bu seçenekler yok.
 
 ---
 

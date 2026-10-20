@@ -100,19 +100,16 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
         _signalFrameTs = null;
         SchedulerBinding.instance.addPostFrameCallback((_) {
           _signalFrameTs = SchedulerBinding.instance.currentSystemFrameTimeStamp;
-          services.feedback.signal();
         });
       }
       final result = s.lastResult;
       if (s.phase == DuelPhase.scored ||
           (s.phase == DuelPhase.matchOver && result?.outcome == RoundOutcome.scored)) {
-        services.feedback.point();
         services.settings.setOnboardingDone(true);
       }
       if (result?.outcome == RoundOutcome.foul &&
           (s.phase == DuelPhase.foul || s.phase == DuelPhase.matchOver)) {
         _shakes[result!.foulBy!.index]++;
-        services.feedback.foul();
       }
       if (s.phase == DuelPhase.matchOver) _onMatchOver(s);
       if (s.phase == DuelPhase.ready) {

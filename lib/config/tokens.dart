@@ -216,8 +216,6 @@ abstract final class AppGlyphs {
 }
 
 abstract final class AppMotion {
-  static const Duration hapticGap = Duration(milliseconds: 120);
-
   /// Waiting orb: only the ring breathes (fixed period, never synced to the
   /// round schedule). Home orb keeps the full-body breath.
   static const Duration breath = Duration(milliseconds: 2400);

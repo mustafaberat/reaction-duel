@@ -259,16 +259,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsLanguageSystem => 'System default';
 
   @override
-  String get settingsSound => 'Sound';
-
-  @override
-  String get settingsSoundHint =>
-      'Short click on points and fouls. Never on the signal.';
-
-  @override
-  String get settingsHaptics => 'Vibration';
-
-  @override
   String get settingsColorBlind => 'Color-blind mode';
 
   @override
@@ -280,13 +270,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsAccessibility => 'Accessibility';
-
-  @override
-  String get settingsSignalVibration => 'Vibrate on signal';
-
-  @override
-  String get settingsSignalVibrationHint =>
-      'Accessibility aid: the phone buzzes the moment the signal appears. Off by default.';
 
   @override
   String get motionSystem => 'System';

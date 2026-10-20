@@ -78,10 +78,7 @@ class SettingsService extends ChangeNotifier {
   };
 
   String? _language;
-  bool _sound = true;
-  bool _haptics = true;
   bool _colorBlind = false;
-  bool _signalVibration = false;
   ReduceMotionPref _reduceMotion = ReduceMotionPref.system;
   bool _onboardingDone = false;
   bool _howToSeen = false;
@@ -90,12 +87,7 @@ class SettingsService extends ChangeNotifier {
   /// Null = follow the device language.
   String? get language => _language;
   Locale? get locale => _language == null ? null : Locale(_language!);
-  bool get sound => _sound;
-  bool get haptics => _haptics;
   bool get colorBlind => _colorBlind;
-
-  /// Accessibility aid: buzz on the real signal (rfc §8.1). Default off.
-  bool get signalVibration => _signalVibration;
   ReduceMotionPref get reduceMotion => _reduceMotion;
   bool get onboardingDone => _onboardingDone;
   bool get howToSeen => _howToSeen;
@@ -112,10 +104,7 @@ class SettingsService extends ChangeNotifier {
   void _load() {
     final lang = _prefs.getString(PrefsKeys.language);
     _language = supportedLanguages.contains(lang) ? lang : null;
-    _sound = _prefs.getBool(PrefsKeys.sound) ?? true;
-    _haptics = _prefs.getBool(PrefsKeys.haptics) ?? true;
     _colorBlind = _prefs.getBool(PrefsKeys.colorBlind) ?? false;
-    _signalVibration = _prefs.getBool(PrefsKeys.signalVibration) ?? false;
     _reduceMotion =
         _byName(ReduceMotionPref.values, _prefs.getString(PrefsKeys.reduceMotion)) ??
         ReduceMotionPref.system;
@@ -159,28 +148,10 @@ class SettingsService extends ChangeNotifier {
     }
   }
 
-  Future<void> setSound(bool value) async {
-    _sound = value;
-    notifyListeners();
-    await _prefs.setBool(PrefsKeys.sound, value);
-  }
-
-  Future<void> setHaptics(bool value) async {
-    _haptics = value;
-    notifyListeners();
-    await _prefs.setBool(PrefsKeys.haptics, value);
-  }
-
   Future<void> setColorBlind(bool value) async {
     _colorBlind = value;
     notifyListeners();
     await _prefs.setBool(PrefsKeys.colorBlind, value);
-  }
-
-  Future<void> setSignalVibration(bool value) async {
-    _signalVibration = value;
-    notifyListeners();
-    await _prefs.setBool(PrefsKeys.signalVibration, value);
   }
 
   Future<void> setReduceMotion(ReduceMotionPref value) async {

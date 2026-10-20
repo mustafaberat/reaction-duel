@@ -17,7 +17,7 @@ flutter test tool/capture_design_shots.dart # design/shots/*.png (1080×2340)
 - `lib/game/` — duel screen, `HalfPad` (`Listener.onPointerDown`), `SignalOrb`, pause / match-end overlays.
 - `lib/screens/` — home, match setup, settings, how to play (live demo built from `DuelBoard`).
 - `lib/config/` — `app_config.dart` (rules/timing, pure Dart), `tokens.dart`, `app_theme.dart`, `ad_config.dart`.
-- `lib/services/` — settings / stats (SharedPreferences), ads (Google **test** ids only), feedback.
+- `lib/services/` — settings / stats (SharedPreferences), ads (Google **test** ids only).
 - `lib/l10n/` — gen-l10n ARBs for 10 locales.
 
 ## Phase 1 status

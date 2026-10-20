@@ -22,11 +22,8 @@ abstract final class AppRoutes {
 /// SharedPreferences keys (storage ids, not UI text).
 abstract final class PrefsKeys {
   static const String language = 'language';
-  static const String sound = 'sound';
-  static const String haptics = 'haptics';
   static const String colorBlind = 'color_blind';
   static const String reduceMotion = 'reduce_motion';
-  static const String signalVibration = 'signal_vibration';
   static const String onboardingDone = 'onboarding_done';
   static const String howToSeen = 'how_to_seen';
 

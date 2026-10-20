@@ -576,24 +576,6 @@ abstract class AppLocalizations {
   /// **'System default'**
   String get settingsLanguageSystem;
 
-  /// No description provided for @settingsSound.
-  ///
-  /// In en, this message translates to:
-  /// **'Sound'**
-  String get settingsSound;
-
-  /// No description provided for @settingsSoundHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Short click on points and fouls. Never on the signal.'**
-  String get settingsSoundHint;
-
-  /// No description provided for @settingsHaptics.
-  ///
-  /// In en, this message translates to:
-  /// **'Vibration'**
-  String get settingsHaptics;
-
   /// No description provided for @settingsColorBlind.
   ///
   /// In en, this message translates to:
@@ -617,18 +599,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Accessibility'**
   String get settingsAccessibility;
-
-  /// No description provided for @settingsSignalVibration.
-  ///
-  /// In en, this message translates to:
-  /// **'Vibrate on signal'**
-  String get settingsSignalVibration;
-
-  /// No description provided for @settingsSignalVibrationHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Accessibility aid: the phone buzzes the moment the signal appears. Off by default.'**
-  String get settingsSignalVibrationHint;
 
   /// No description provided for @motionSystem.
   ///

@@ -1,4 +1,4 @@
-/// Settings: language (live), sound, haptics, color-blind, reduce motion,
+/// Settings: language (live), color-blind, reduce motion,
 /// How to Play, tips reset, privacy, version.
 library;
 
@@ -53,19 +53,6 @@ class SettingsScreen extends StatelessWidget {
                                 : SettingsService.languageNames[lang],
                             onTap: () => _pickLanguage(context),
                           ),
-                          ToggleRow(
-                            icon: Icons.volume_up_outlined,
-                            title: l10n.settingsSound,
-                            subtitle: l10n.settingsSoundHint,
-                            value: settings.sound,
-                            onChanged: settings.setSound,
-                          ),
-                          ToggleRow(
-                            icon: Icons.vibration_rounded,
-                            title: l10n.settingsHaptics,
-                            value: settings.haptics,
-                            onChanged: settings.setHaptics,
-                          ),
                         ],
                       ),
                       SectionLabel(l10n.settingsAccessibility),
@@ -111,13 +98,6 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          ),
-                          ToggleRow(
-                            icon: Icons.edgesensor_high_outlined,
-                            title: l10n.settingsSignalVibration,
-                            subtitle: l10n.settingsSignalVibrationHint,
-                            value: settings.signalVibration,
-                            onChanged: settings.setSignalVibration,
                           ),
                         ],
                       ),

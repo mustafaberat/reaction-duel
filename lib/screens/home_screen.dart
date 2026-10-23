@@ -101,7 +101,14 @@ class HomeScreen extends StatelessWidget {
                                     excludeSemantics: true,
                                     child: HomePlayLoop(
                                       size: preview,
+                                      waitLabel: l10n.duelWait,
                                       goLabel: l10n.duelGo,
+                                      slowTime: l10n.duelMs(
+                                        HomePlayLoop.demoSlowMs,
+                                      ),
+                                      fastTime: l10n.duelMs(
+                                        HomePlayLoop.demoFastMs,
+                                      ),
                                       reduceMotion: reduceMotion,
                                       frozenProgress: playLoopProgress,
                                     ),

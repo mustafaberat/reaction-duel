@@ -100,6 +100,60 @@ void main() {
     await _captureLocales(tester, services);
   }, timeout: const Timeout(Duration(minutes: 16)));
 
+  testWidgets('capture home preview sizes', (tester) async {
+    await tester.runAsync(_loadFonts);
+    PackageInfo.setMockInitialValues(
+      appName: AppIdentity.appName,
+      packageName: AppIdentity.packageId,
+      version: '0.1.0',
+      buildNumber: '1',
+      buildSignature: '',
+    );
+    SharedPreferences.setMockInitialValues({
+      PrefsKeys.language: 'tr',
+      PrefsKeys.onboardingDone: true,
+      PrefsKeys.bestReactionMs: 187,
+      PrefsKeys.totalMatches: 12,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final settings = SettingsService(prefs);
+    final stats = StatsService(prefs);
+    final services = AppServices(settings: settings, stats: stats);
+    await settings.setLanguage('tr');
+    await _capture(
+      tester,
+      services,
+      '$_outRoot/01-home.png',
+      const HomeScreen(playLoopProgress: 0.84),
+    );
+    await _capture(
+      tester,
+      services,
+      '$_outSmall/01-home.png',
+      const HomeScreen(playLoopProgress: 0.84),
+      size: _tiny,
+    );
+    await _capture(
+      tester,
+      services,
+      '$_outRoot/16-home-play-loop.png',
+      const HomeScreen(playLoopProgress: 0.46),
+    );
+    for (final shot in [
+      ('home-wait', 0.08),
+      ('home-go', 0.28),
+      ('home-press', 0.46),
+      ('home-result', 0.84),
+    ]) {
+      await _capture(
+        tester,
+        services,
+        '$_outRoot/${shot.$1}.png',
+        HomeScreen(playLoopProgress: shot.$2),
+      );
+    }
+  }, timeout: const Timeout(Duration(minutes: 2)));
+
   testWidgets('capture rr18 tap and match-end', (tester) async {
     await tester.runAsync(_loadFonts);
     PackageInfo.setMockInitialValues(
@@ -214,11 +268,7 @@ Future<void> _captureRr18(WidgetTester tester, AppServices services) async {
   const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
   await services.settings.setMatch(classicConfig);
 
-  Future<void> shot(
-    String name,
-    Widget home, {
-    _ShotSize size = _se,
-  }) async {
+  Future<void> shot(String name, Widget home, {_ShotSize size = _se}) async {
     await _capture(tester, services, '$_outRr18/$name.png', home, size: size);
   }
 

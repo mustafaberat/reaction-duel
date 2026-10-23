@@ -242,7 +242,6 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
               MatchEndOverlay(
                 state: s,
                 names: names,
-                hues: [h1, h2],
                 series: [services.stats.seriesOf(Player.p1), services.stats.seriesOf(Player.p2)],
                 newRecord: _newRecord,
                 reduceMotion: reduceMotion,

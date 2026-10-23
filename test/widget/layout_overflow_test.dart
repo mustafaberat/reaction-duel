@@ -221,12 +221,15 @@ void main() {
         _size(tester, size);
         await _pump(tester, await _services(), _duel(_Scene.matchEnd));
         final score = find.text('3 – 1');
-        expect(score, findsWidgets);
-        expect(tester.getSize(score.first).height, greaterThanOrEqualTo(24));
-        expect(find.text('En iyi'), findsWidgets);
-        expect(find.text('Ortalama'), findsWidgets);
-        expect(find.text('Faul'), findsWidgets);
-        expect(find.text('Seri'), findsWidgets);
+        expect(score, findsOneWidget);
+        expect(tester.getSize(score).height, greaterThanOrEqualTo(24));
+        expect(find.text('En iyi'), findsOneWidget);
+        expect(find.text('Ortalama'), findsOneWidget);
+        expect(find.text('Faul'), findsOneWidget);
+        expect(find.text('Seri'), findsOneWidget);
+        expect(find.text('Rövanş'), findsOneWidget);
+        expect(find.text('Ayarları değiştir'), findsOneWidget);
+        expect(find.text('Ana sayfa'), findsOneWidget);
       });
     });
   }
@@ -236,28 +239,15 @@ void main() {
     await _pump(tester, await _services(), _duel(_Scene.matchEnd));
     final screen = tester.getRect(find.byType(DuelScreen));
     final rematch = find.text('Rövanş');
-    var rematchTop = screen.bottom;
-    for (var i = 0; i < rematch.evaluate().length; i++) {
-      final top = tester.getRect(rematch.at(i)).top;
-      if (top > screen.center.dy && top < rematchTop) rematchTop = top;
-    }
+    expect(rematch, findsOneWidget);
+    final rematchTop = tester.getRect(rematch).top;
     for (final label in ['En iyi', 'Ortalama', 'Faul', 'Seri']) {
       final finder = find.text(label);
-      expect(finder, findsWidgets);
-      var visible = false;
-      for (var i = 0; i < finder.evaluate().length; i++) {
-        final rect = tester.getRect(finder.at(i));
-        if (rect.top > screen.center.dy &&
-            rect.bottom <= rematchTop &&
-            rect.height > 8) {
-          visible = true;
-        }
-      }
-      expect(
-        visible,
-        isTrue,
-        reason: '$label should sit above Rematch at 375',
-      );
+      expect(finder, findsOneWidget);
+      final rect = tester.getRect(finder);
+      expect(rect.height, greaterThan(10), reason: '$label stayed readable');
+      expect(rect.bottom, lessThanOrEqualTo(rematchTop));
+      expect(rect.top, greaterThanOrEqualTo(screen.top));
     }
   });
 
@@ -283,7 +273,7 @@ void main() {
       );
       await _pump(tester, services, _duel(_Scene.matchEnd));
       expect(find.text('Play'), findsNothing);
-      expect(find.text('3 – 1'), findsWidgets);
+      expect(find.text('3 – 1'), findsOneWidget);
     });
   }
 

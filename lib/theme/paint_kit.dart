@@ -232,26 +232,4 @@ abstract final class PaintKit {
     }
   }
 
-  static void dinoFoot(Canvas canvas, Offset c, double s, Color color, {double opacity = 1}) {
-    final fillC = color.withValues(alpha: opacity);
-    final line = AppColors.outline.withValues(alpha: opacity);
-    for (final x in [-0.34, 0.0, 0.34]) {
-      final toe = Path()
-        ..addRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromCenter(center: c + Offset(x * s, -s * 0.22), width: s * 0.22, height: s * 0.55),
-            Radius.circular(s * 0.11),
-          ),
-        );
-      blob(canvas, toe, color: fillC, line: line, width: s * 0.05);
-    }
-    final pad = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: c + Offset(0, s * 0.18), width: s * 0.78, height: s * 0.42),
-          Radius.circular(s * 0.2),
-        ),
-      );
-    blob(canvas, pad, color: fillC, line: line, width: s * 0.06);
-  }
 }

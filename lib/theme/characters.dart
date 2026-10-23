@@ -9,6 +9,9 @@ import '../config/tokens.dart';
 import '../engine/duel_state.dart';
 import 'paint_kit.dart';
 
+/// Darker readable dino accent for UI chrome (names, dots) on cream.
+Color dinoAccent(Player player) => AppColors.dinoInkOf(player.index);
+
 CharacterMood moodFor(Player player, DuelState state) {
   final last = state.lastResult;
   switch (state.phase) {

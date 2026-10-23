@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reaction_duel/config/app_config.dart';
@@ -28,6 +30,16 @@ void main() {
     expect(AppColors.text, isNot(AppColors.displaySkyFill));
   });
 
+  test('dino inks are readable on cream and match each dino', () {
+    expect(AppColors.trexInk, isNot(AppColors.triInk));
+    expect(AppColors.dinoInkOf(0), AppColors.trexInk);
+    expect(AppColors.dinoInkOf(1), AppColors.triInk);
+    expect(_contrast(AppColors.trexInk, AppColors.surface), greaterThan(4.5));
+    expect(_contrast(AppColors.triInk, AppColors.surface), greaterThan(4.5));
+    expect(_contrast(AppColors.trexInk, AppColors.highlight), greaterThan(4.5));
+    expect(_contrast(AppColors.triInk, AppColors.highlight), greaterThan(4.5));
+  });
+
   test('player hues stay distinct and resolve a clash', () {
     expect(PlayerHue.blue.ink, isNot(PlayerHue.yellow.ink));
     expect(PlayerHue.green.tint, isNot(PlayerHue.cream.tint));
@@ -47,5 +59,18 @@ void main() {
     expect(AppLayout.endLoseSize(80), lessThan(80));
     expect(AppLayout.endWinSize(333), 80);
     expect(AppLayout.endWinSize(420), 120);
+    expect(AppDimens.endCardMaxWidth, 480);
   });
+}
+
+double _contrast(Color a, Color b) {
+  double lin(double s) =>
+      s <= 0.04045 ? s / 12.92 : math.pow((s + 0.055) / 1.055, 2.4).toDouble();
+  double lum(Color c) =>
+      0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+  final l1 = lum(a);
+  final l2 = lum(b);
+  final hi = l1 > l2 ? l1 : l2;
+  final lo = l1 > l2 ? l2 : l1;
+  return (hi + 0.05) / (lo + 0.05);
 }

@@ -73,10 +73,18 @@ abstract final class AppColors {
   /// Sunny sticker fill for display type sitting on the sky.
   static const Color displaySkyFill = Color(0xFFFFE566);
 
+  /// Darker T-rex / triceratops inks for names and dots on cream (WCAG AA).
+  static const Color trexInk = Color(0xFF227033);
+  static const Color triInk = Color(0xFF1E5FA8);
+
   static Color signal(SignalColor c) => Color(c.argb);
+
+  /// Player identity color from the dino, not the half hue picker.
+  static Color dinoInkOf(int playerIndex) =>
+      playerIndex == 0 ? trexInk : triInk;
 }
 
-/// Per-player half accent. [ink] for name/dots, [tint] for the half background.
+/// Per-player half wash. [tint] fills the half; [ink] is the setup-chip color.
 enum PlayerHue {
   yellow,
   green,
@@ -275,6 +283,7 @@ abstract final class AppDimens {
   static const double demoHand = 44;
 
   static const double endPanelMaxWidth = 360;
+  static const double endCardMaxWidth = 480;
   static const double statsColumn = 64;
 
   static const double characterHalf = 128;
@@ -311,7 +320,7 @@ abstract final class AppMotion {
   static const Duration demoLoop = Duration(milliseconds: 3600);
   static const Duration demoPress = Duration(milliseconds: 140);
 
-  static const Duration tapBurst = Duration(milliseconds: 720);
+  static const Duration tapBurst = Duration(milliseconds: 900);
 }
 
 abstract final class AppShadows {

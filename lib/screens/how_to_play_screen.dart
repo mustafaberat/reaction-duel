@@ -472,6 +472,7 @@ class _Demo extends StatelessWidget {
                       dy: 0.62,
                       progress: 0.4,
                       winning: step == HowStep.tap,
+                      player: hand,
                     ),
                   ),
                 ]

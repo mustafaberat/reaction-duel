@@ -24,4 +24,4 @@ flutter test tool/capture_design_shots.dart # design/shots/*.png (1080×2340)
 
 - Localization: `en` and `tr` complete. `es, pt, zh, ja, de, fr, ko, it` are **English copies** (keys complete, translation pending).
 - Ads: Google test ids everywhere; real `ca-app-pub-1508520223269936/<TBD>` ids go in `lib/config/ad_config.dart`, `AndroidManifest.xml`, `gma_ad_services_config.xml`, iOS `Info.plist`.
-- Fonts bundled: Inter + Sora (OFL, `assets/fonts/`).
+- Fonts bundled: Baloo 2 + Nunito, plus Zen Maru Gothic / Jua / ZCOOL KuaiLe (OFL, `assets/fonts/`).

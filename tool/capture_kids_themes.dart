@@ -51,6 +51,10 @@ const _tiny = _ShotSize(Size(320, 568));
 const String _outRoot = 'play/design-options/c';
 const String _outSmall = 'play/design-options/small';
 const String _outLocale = 'play/locale-check';
+const String _outRr18 = 'play/design-options/rr18';
+
+/// ~250 ms into the 900 ms tap burst — dirt airborne, footprint readable.
+const double _tapMid = 250 / 900;
 
 const List<double> _howToKeyFrames = [0.3, 0.55, 0.52, 0.72, 0.3];
 const List<String> _locales = [
@@ -92,8 +96,32 @@ void main() {
     await settings.setLanguage('tr');
     await _captureTheme(tester, services);
     await _captureSmall(tester, services);
+    await _captureRr18(tester, services);
     await _captureLocales(tester, services);
   }, timeout: const Timeout(Duration(minutes: 16)));
+
+  testWidgets('capture rr18 tap and match-end', (tester) async {
+    await tester.runAsync(_loadFonts);
+    PackageInfo.setMockInitialValues(
+      appName: AppIdentity.appName,
+      packageName: AppIdentity.packageId,
+      version: '0.1.0',
+      buildNumber: '1',
+      buildSignature: '',
+    );
+    SharedPreferences.setMockInitialValues({
+      PrefsKeys.language: 'tr',
+      PrefsKeys.onboardingDone: true,
+      PrefsKeys.bestReactionMs: 187,
+      PrefsKeys.totalMatches: 12,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final settings = SettingsService(prefs);
+    final stats = StatsService(prefs);
+    final services = AppServices(settings: settings, stats: stats);
+    await settings.setLanguage('tr');
+    await _captureRr18(tester, services);
+  }, timeout: const Timeout(Duration(minutes: 4)));
 }
 
 Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
@@ -181,6 +209,116 @@ Future<void> _captureSmall(WidgetTester tester, AppServices services) async {
   );
 }
 
+Future<void> _captureRr18(WidgetTester tester, AppServices services) async {
+  await services.settings.setLanguage('tr');
+  const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
+  await services.settings.setMatch(classicConfig);
+
+  Future<void> shot(
+    String name,
+    Widget home, {
+    _ShotSize size = _se,
+  }) async {
+    await _capture(tester, services, '$_outRr18/$name.png', home, size: size);
+  }
+
+  await shot(
+    'tap-close',
+    DuelScreen(
+      config: classicConfig,
+      engine: _engineFor(classicConfig, _Scene.midtap),
+      driveTimers: false,
+      showCoach: false,
+      frozenBursts: const [
+        (
+          Player.p1,
+          TapBurstSpec(
+            dx: 0.34,
+            dy: 0.68,
+            progress: _tapMid,
+            winning: true,
+            player: Player.p1,
+          ),
+        ),
+        (
+          Player.p2,
+          TapBurstSpec(
+            dx: 0.62,
+            dy: 0.66,
+            progress: _tapMid,
+            player: Player.p2,
+          ),
+        ),
+      ],
+    ),
+  );
+  await shot(
+    'tap-green',
+    DuelScreen(
+      config: classicConfig,
+      engine: _engineFor(classicConfig, _Scene.midtap),
+      driveTimers: false,
+      showCoach: false,
+      frozenBursts: const [
+        (
+          Player.p1,
+          TapBurstSpec(
+            dx: 0.38,
+            dy: 0.66,
+            progress: _tapMid,
+            winning: true,
+            player: Player.p1,
+          ),
+        ),
+      ],
+    ),
+  );
+  await shot(
+    'tap-blue',
+    DuelScreen(
+      config: classicConfig,
+      engine: _engineFor(classicConfig, _Scene.midtap),
+      driveTimers: false,
+      showCoach: false,
+      frozenBursts: const [
+        (
+          Player.p2,
+          TapBurstSpec(
+            dx: 0.4,
+            dy: 0.64,
+            progress: _tapMid,
+            winning: true,
+            player: Player.p2,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  final endEngine = _engineFor(classicConfig, _Scene.matchEnd);
+  await services.stats.recordMatch(endEngine.state);
+  final end = DuelScreen(
+    config: classicConfig,
+    engine: endEngine,
+    driveTimers: false,
+    showCoach: false,
+  );
+  await shot('match-end', end);
+  await shot('match-end-320', end, size: _tiny);
+
+  final endBlue = _engineFor(classicConfig, _Scene.matchEndBlue);
+  await services.stats.recordMatch(endBlue.state);
+  await shot(
+    'match-end-blue',
+    DuelScreen(
+      config: classicConfig,
+      engine: endBlue,
+      driveTimers: false,
+      showCoach: false,
+    ),
+  );
+}
+
 Future<void> _captureLocales(WidgetTester tester, AppServices services) async {
   const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
   await services.settings.setMatch(classicConfig);
@@ -230,6 +368,7 @@ enum _Scene {
   scored,
   decoy,
   matchEnd,
+  matchEndBlue,
   paused,
   coach,
 }
@@ -244,13 +383,28 @@ Widget _duel(MatchConfig config, _Scene scene, {bool coach = false}) {
         ? const [
             (
               Player.p1,
-              TapBurstSpec(dx: 0.3, dy: 0.62, progress: 0.38, winning: true),
+              TapBurstSpec(
+                dx: 0.3,
+                dy: 0.62,
+                progress: 0.38,
+                winning: true,
+                player: Player.p1,
+              ),
             ),
             (
               Player.p1,
-              TapBurstSpec(dx: 0.58, dy: 0.5, progress: 0.22, winning: true),
+              TapBurstSpec(
+                dx: 0.58,
+                dy: 0.5,
+                progress: 0.22,
+                winning: true,
+                player: Player.p1,
+              ),
             ),
-            (Player.p2, TapBurstSpec(dx: 0.4, dy: 0.6, progress: 0.48)),
+            (
+              Player.p2,
+              TapBurstSpec(dx: 0.4, dy: 0.6, progress: 0.48, player: Player.p2),
+            ),
           ]
         : const [],
   );
@@ -320,6 +474,9 @@ DuelEngine _engineFor(MatchConfig config, _Scene scene) {
       engine.tap(Player.p2);
       win(Player.p1, 219, 251);
       win(Player.p1, 204, 262);
+    case _Scene.matchEndBlue:
+      win(Player.p2, 219, 251);
+      win(Player.p2, 204, 262);
     case _Scene.paused:
       win(Player.p1, 226, 290);
       runTo(DuelPhase.waiting);

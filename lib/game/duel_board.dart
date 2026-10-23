@@ -167,7 +167,7 @@ class DuelBoard extends StatelessWidget {
                   pulseUp: pulseUp,
                   pulseColor: last?.winner == null
                       ? AppColors.text
-                      : hues[last!.winner!.index].ink,
+                      : dinoAccent(last!.winner!),
                 ),
               ),
             ),

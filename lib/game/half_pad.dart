@@ -138,7 +138,7 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
     if (size.width <= 0 || size.height <= 0) return;
     final controller = AnimationController(
       vsync: this,
-      duration: AppMotion.tapBurst,
+      duration: widget.reduceMotion ? AppMotion.fast : AppMotion.tapBurst,
     );
     final tap = _LiveTap(
       (local.dx / size.width).clamp(0.08, 0.92),
@@ -160,7 +160,7 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final onSignal = widget.signalFill != null;
-    final ink = onSignal ? AppColors.onSignal : widget.hue.ink;
+    final ink = onSignal ? AppColors.onSignal : dinoAccent(widget.player);
     final textColor = onSignal ? AppColors.onSignal : AppColors.text;
     final muted = onSignal ? AppColors.onSignalMuted : AppColors.textMuted;
     final bg = widget.signalFill ?? widget.hue.tint;
@@ -253,6 +253,8 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
                         dx: t.dx,
                         dy: t.dy,
                         progress: t.controller.value,
+                        player: widget.player,
+                        reduceMotion: widget.reduceMotion,
                       ),
                   ],
                 ),
@@ -298,7 +300,7 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
       ResultTone.foul =>
         widget.signalFill != null ? AppColors.onSignal : AppColors.danger,
       ResultTone.win =>
-        widget.signalFill != null ? AppColors.onSignal : widget.hue.ink,
+        widget.signalFill != null ? AppColors.onSignal : dinoAccent(widget.player),
       _ => muted,
     };
     final bigColor = r.tone == ResultTone.lose ? muted : textColor;
@@ -339,7 +341,9 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
               _Badge(
                 text: r.badge!,
                 filled: r.tone == ResultTone.win,
-                color: r.tone == ResultTone.win ? widget.hue.ink : muted,
+                color: r.tone == ResultTone.win
+                    ? dinoAccent(widget.player)
+                    : muted,
               ),
               const SizedBox(height: AppDimens.gapS),
             ],

@@ -107,6 +107,49 @@ class _HomePlayLoopState extends State<HomePlayLoop>
 
 enum _Phase { wait, go, press, result }
 
+enum _TailAim { toTopRight, toBottomLeft }
+
+/// Shared layout so the painted print and the palm label stay lined up.
+abstract final class _PadGeom {
+  static double sizeOf(double s) => s * 0.56;
+
+  static Offset center(double s, double nudge) =>
+      Offset(s * 0.50, s * 0.50 + nudge);
+
+  static Rect heel(double s, double nudge) {
+    final p = sizeOf(s);
+    return Rect.fromCenter(
+      center: center(s, nudge) + Offset(0, p * 0.18),
+      width: p * 0.56,
+      height: p * 0.40,
+    );
+  }
+
+  /// Heel, then left / mid / right toes. Local space around [c].
+  static List<Rect> ovals(Offset c, double s) => [
+    Rect.fromCenter(
+      center: c + Offset(0, s * 0.18),
+      width: s * 0.56,
+      height: s * 0.44,
+    ),
+    Rect.fromCenter(
+      center: c + Offset(-s * 0.24, -s * 0.12),
+      width: s * 0.34,
+      height: s * 0.38,
+    ),
+    Rect.fromCenter(
+      center: c + Offset(0, -s * 0.22),
+      width: s * 0.36,
+      height: s * 0.42,
+    ),
+    Rect.fromCenter(
+      center: c + Offset(s * 0.24, -s * 0.12),
+      width: s * 0.34,
+      height: s * 0.38,
+    ),
+  ];
+}
+
 class _Board extends StatelessWidget {
   const _Board({
     required this.t,
@@ -146,8 +189,8 @@ class _Board extends StatelessWidget {
     final showSlow = phase == _Phase.result;
     final won = phase == _Phase.result;
     final stamp = phase == _Phase.press || phase == _Phase.result;
-    final pad = size * 0.44;
-    final pressNudge = pressed ? size * 0.03 : 0.0;
+    final pressNudge = pressed ? size * 0.022 : 0.0;
+    final heel = _PadGeom.heel(size, pressNudge);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimens.cardRadius),
@@ -161,31 +204,39 @@ class _Board extends StatelessWidget {
                 live: live,
                 pressed: pressed,
                 stamp: stamp,
+                won: won,
               ),
             ),
           ),
-          Positioned(
-            left: (size - pad) / 2,
-            top: (size - pad) / 2 + pressNudge,
-            width: pad,
-            height: pad,
+          Positioned.fromRect(
+            rect: heel,
             child: _PadLabel(
               text: live ? goLabel : waitLabel,
               live: live,
-              size: pad,
+              size: heel.width,
             ),
           ),
           if (showSlow)
             Positioned(
-              right: size * 0.04,
-              top: size * 0.03,
-              child: _SpeechBubble(text: slowTime, size: size, winner: false),
+              left: size * 0.04,
+              top: size * 0.012,
+              child: _SpeechBubble(
+                text: slowTime,
+                size: size,
+                winner: false,
+                aim: _TailAim.toTopRight,
+              ),
             ),
           if (showFast)
             Positioned(
               right: size * 0.04,
-              bottom: size * 0.03,
-              child: _SpeechBubble(text: fastTime, size: size, winner: won),
+              bottom: size * 0.012,
+              child: _SpeechBubble(
+                text: fastTime,
+                size: size,
+                winner: won,
+                aim: _TailAim.toBottomLeft,
+              ),
             ),
         ],
       ),
@@ -202,10 +253,9 @@ class _PadLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const Alignment(0, 0.38),
+    return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: size * 0.16),
+        padding: EdgeInsets.symmetric(horizontal: size * 0.08),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
@@ -214,7 +264,7 @@ class _PadLabel extends StatelessWidget {
             style: TextStyle(
               fontFamily: AppFonts.display,
               fontFamilyFallback: AppFonts.fallback,
-              fontSize: size * 0.18,
+              fontSize: size * 0.32,
               fontWeight: FontWeight.w800,
               height: 1,
               letterSpacing: 0.2,
@@ -232,87 +282,116 @@ class _SpeechBubble extends StatelessWidget {
     required this.text,
     required this.size,
     required this.winner,
+    required this.aim,
   });
 
   final String text;
   final double size;
   final bool winner;
+  final _TailAim aim;
 
   @override
   Widget build(BuildContext context) {
     final fill = winner ? const Color(0xFFFFD24A) : AppColors.surface;
-    final font = (size * 0.07).clamp(8.0, 14.0);
-    final crown = font * 1.15;
+    final font = (size * 0.068).clamp(8.0, 13.0);
+    final tail = (size * 0.07).clamp(7.0, 13.0);
+    final padH = size * 0.032;
+    final padV = size * 0.015;
+    final towardBlue = aim == _TailAim.toTopRight;
 
-    return Container(
+    return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: size * 0.48),
-      padding: EdgeInsets.symmetric(
-        horizontal: size * 0.035,
-        vertical: size * 0.016,
-      ),
-      decoration: BoxDecoration(
-        color: fill,
-        borderRadius: BorderRadius.circular(size * 0.05),
-        border: Border.all(
-          color: AppColors.outline,
-          width: (size * 0.018).clamp(1.5, 2.5),
+      child: CustomPaint(
+        painter: _BubblePainter(
+          fill: fill,
+          aim: aim,
+          tail: tail,
+          strokeW: (size * 0.016).clamp(1.4, 2.2),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.outline.withValues(alpha: 0.22),
-            offset: Offset(0, size * 0.012),
-            blurRadius: 0,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            padH + (towardBlue ? 0 : tail * 0.85),
+            padV,
+            padH + (towardBlue ? tail * 0.85 : 0),
+            padV,
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (winner) ...[
-            CustomPaint(
-              size: Size(crown * 1.35, crown),
-              painter: const _CrownPainter(),
-            ),
-            SizedBox(width: size * 0.02),
-          ],
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                text,
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: AppFonts.body,
-                  fontFamilyFallback: AppFonts.fallback,
-                  fontSize: font,
-                  fontWeight: FontWeight.w800,
-                  height: 1,
-                  color: AppColors.text,
-                  fontFeatures: AppFonts.tabular,
-                ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              text,
+              maxLines: 1,
+              style: TextStyle(
+                fontFamily: AppFonts.body,
+                fontFamilyFallback: AppFonts.fallback,
+                fontSize: font,
+                fontWeight: FontWeight.w800,
+                height: 1,
+                color: AppColors.text,
+                fontFeatures: AppFonts.tabular,
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _CrownPainter extends CustomPainter {
-  const _CrownPainter();
+class _BubblePainter extends CustomPainter {
+  const _BubblePainter({
+    required this.fill,
+    required this.aim,
+    required this.tail,
+    required this.strokeW,
+  });
+
+  final Color fill;
+  final _TailAim aim;
+  final double tail;
+  final double strokeW;
 
   @override
   void paint(Canvas canvas, Size size) {
-    PaintKit.crown(
-      canvas,
-      Offset(size.width / 2, size.height * 0.62),
-      size.shortestSide * 0.46,
+    final towardBlue = aim == _TailAim.toTopRight;
+    final body = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        towardBlue ? 0 : tail * 0.7,
+        0,
+        size.width - tail * 0.7,
+        size.height,
+      ),
+      Radius.circular(size.height * 0.46),
     );
+    final tip = towardBlue
+        ? Offset(size.width, size.height * 0.28)
+        : Offset(0, size.height * 0.72);
+    final baseA = towardBlue
+        ? Offset(size.width - tail * 0.85, size.height * 0.12)
+        : Offset(tail * 0.85, size.height * 0.88);
+    final baseB = towardBlue
+        ? Offset(size.width - tail * 0.85, size.height * 0.78)
+        : Offset(tail * 0.85, size.height * 0.22);
+    final spike = Path()
+      ..moveTo(baseA.dx, baseA.dy)
+      ..lineTo(tip.dx, tip.dy)
+      ..lineTo(baseB.dx, baseB.dy)
+      ..close();
+    final shape = Path.combine(
+      PathOperation.union,
+      Path()..addRRect(body),
+      spike,
+    );
+    canvas.drawPath(
+      shape.shift(Offset(0, strokeW * 0.9)),
+      PaintKit.fill(AppColors.outline.withValues(alpha: 0.28)),
+    );
+    canvas.drawPath(shape, PaintKit.fill(fill));
+    canvas.drawPath(shape, PaintKit.stroke(AppColors.outline, strokeW));
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_BubblePainter old) =>
+      old.fill != fill || old.aim != aim || old.tail != tail;
 }
 
 class _MeadowFill extends CustomPainter {
@@ -325,12 +404,12 @@ class _MeadowFill extends CustomPainter {
     canvas.drawRect(Offset.zero & size, PaintKit.fill(_meadow));
     final paint = PaintKit.fill(const Color(0x338BC94A));
     const dots = [
-      Offset(0.16, 0.36),
-      Offset(0.84, 0.32),
-      Offset(0.14, 0.68),
-      Offset(0.86, 0.64),
-      Offset(0.24, 0.5),
-      Offset(0.76, 0.48),
+      Offset(0.12, 0.38),
+      Offset(0.88, 0.34),
+      Offset(0.10, 0.66),
+      Offset(0.90, 0.62),
+      Offset(0.18, 0.52),
+      Offset(0.82, 0.48),
     ];
     for (final d in dots) {
       canvas.drawCircle(
@@ -350,50 +429,46 @@ class _GrassPadPainter extends CustomPainter {
     required this.live,
     required this.pressed,
     required this.stamp,
+    required this.won,
   });
 
   final bool live;
   final bool pressed;
   final bool stamp;
+  final bool won;
 
   static const _grass = Color(0xFF8BC94A);
   static const _grassDeep = Color(0xFF5FA636);
-  static const _stone = Color(0xFFEDE3C4);
-  static const _stonePrint = Color(0xFFB8A478);
+  static const _stone = Color(0xFFF4EBD0);
   static const _green = Color(0xFF4CAF50);
-  static const _greenPrint = Color(0xFFE8F6B0);
   static const _dirt = Color(0xFF8B5A2B);
   static const _blue = Color(0xFF5AA4E0);
+  static const _frill = Color(0xFF3D7EC8);
   static const _greenDino = Color(0xFF5BBF4A);
 
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.shortestSide;
-    final grassH = s * 0.15;
-    final head = s * 0.14;
-    _dinoHead(
-      canvas,
-      Offset(s * 0.3, grassH + head * 0.35),
-      head,
-      _blue,
-      frill: true,
-    );
-    _dinoHead(
-      canvas,
-      Offset(s * 0.3, s - grassH - head * 0.35),
-      head,
-      _greenDino,
-    );
+    final grassH = s * 0.145;
+    final head = s * 0.145;
+
     _grassStrip(canvas, size, top: true, h: grassH);
     _grassStrip(canvas, size, top: false, h: grassH);
 
-    final pad = s * 0.44;
-    final center = Offset(s / 2, s / 2 + (pressed ? s * 0.03 : 0));
+    // Faces sit on the grass line so eyes and smiles stay visible.
+    _triHead(canvas, Offset(s * 0.82, grassH + head * 0.18), head);
+    _trexHead(canvas, Offset(s * 0.18, s - grassH - head * 0.16), head);
+    if (won) {
+      PaintKit.crown(canvas, Offset(s * 0.34, s - grassH - head * 0.42), s * 0.07);
+    }
+
+    final pad = _PadGeom.sizeOf(s);
+    final center = _PadGeom.center(s, pressed ? s * 0.022 : 0);
     _pad(canvas, center, pad);
 
     if (stamp) {
-      _dirtBurst(canvas, Offset(s * 0.84, s * 0.56), s);
-      _miniPrint(canvas, Offset(s * 0.86, s * 0.66), s * 0.13);
+      _dirtBurst(canvas, Offset(s * 0.84, s * 0.54), s);
+      _miniPrint(canvas, Offset(s * 0.86, s * 0.64), s * 0.15);
     }
 
     canvas.drawRRect(
@@ -413,7 +488,7 @@ class _GrassPadPainter extends CustomPainter {
   }) {
     final w = size.width;
     final edge = Path();
-    final samples = 10;
+    const samples = 10;
     if (top) {
       edge.moveTo(0, 0);
       edge.lineTo(w, 0);
@@ -464,119 +539,207 @@ class _GrassPadPainter extends CustomPainter {
     }
   }
 
-  void _dinoHead(
-    Canvas canvas,
-    Offset c,
-    double r,
-    Color fill, {
-    bool frill = false,
-  }) {
-    if (frill) {
-      for (final a in [-0.95, -0.35, 0.35, 0.95]) {
-        final p = c + Offset(math.sin(a) * r * 0.92, -math.cos(a) * r * 0.62);
-        PaintKit.circle(
-          canvas,
-          p,
-          r * 0.3,
-          color: const Color(0xFF3D7EC8),
-          width: r * 0.1,
-        );
-      }
+  /// Blue triceratops head peeking from the top grass (home dino, head only).
+  void _triHead(Canvas canvas, Offset c, double r) {
+    final line = AppColors.outline;
+    final w = r * 0.12;
+
+    final frill = Path()
+      ..addOval(
+        Rect.fromCenter(
+          center: c + Offset(0, -r * 0.22),
+          width: r * 1.85,
+          height: r * 1.15,
+        ),
+      );
+    PaintKit.blob(canvas, frill, color: _frill, width: w);
+    for (final a in [-0.8, -0.4, 0.0, 0.4, 0.8]) {
+      final p = c +
+          Offset(math.sin(a) * r * 0.78, -r * 0.22 - math.cos(a) * r * 0.42);
+      PaintKit.circle(
+        canvas,
+        p,
+        r * 0.14,
+        color: PaintKit.lighten(_frill, 0.08),
+        width: w * 0.55,
+      );
     }
-    PaintKit.circle(canvas, c, r, color: fill, width: r * 0.12);
+
+    _horn(canvas, c + Offset(-r * 0.2, -r * 0.58), r * 0.42, true);
+    _horn(canvas, c + Offset(r * 0.16, -r * 0.52), r * 0.36, true);
+    _horn(canvas, c + Offset(-r * 0.58, -r * 0.02), r * 0.32, false);
+
+    PaintKit.blob(
+      canvas,
+      Path()..addOval(
+        Rect.fromCenter(center: c, width: r * 1.4, height: r * 1.15),
+      ),
+      color: _blue,
+      width: w,
+    );
+
+    final beak = Path()
+      ..moveTo(c.dx - r * 0.42, c.dy + r * 0.08)
+      ..quadraticBezierTo(
+        c.dx - r * 0.78,
+        c.dy + r * 0.16,
+        c.dx - r * 0.44,
+        c.dy + r * 0.34,
+      )
+      ..quadraticBezierTo(
+        c.dx - r * 0.22,
+        c.dy + r * 0.22,
+        c.dx - r * 0.16,
+        c.dy + r * 0.1,
+      )
+      ..close();
+    PaintKit.blob(canvas, beak, color: const Color(0xFFFFE08A), width: w * 0.7);
+
+    PaintKit.eye(
+      canvas,
+      c + Offset(-r * 0.1, -r * 0.04),
+      r * 0.22,
+      look: const Offset(-0.12, 0.18),
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(c.dx - r * 0.32, c.dy + r * 0.22)
+        ..quadraticBezierTo(
+          c.dx - r * 0.1,
+          c.dy + r * 0.36,
+          c.dx + r * 0.12,
+          c.dy + r * 0.22,
+        ),
+      PaintKit.stroke(line, w * 0.7),
+    );
+    PaintKit.blush(canvas, c + Offset(r * 0.22, r * 0.16), r * 0.13, alpha: 0.5);
     PaintKit.highlight(
       canvas,
-      c + Offset(-r * 0.28, -r * 0.3),
-      r * 0.3,
-      alpha: 0.4,
-    );
-    _happyEye(canvas, c + Offset(-r * 0.34, -r * 0.1), r * 0.22);
-    _happyEye(canvas, c + Offset(r * 0.34, -r * 0.1), r * 0.22);
-    final smile = Path()
-      ..moveTo(c.dx - r * 0.36, c.dy + r * 0.26)
-      ..quadraticBezierTo(
-        c.dx,
-        c.dy + r * 0.52,
-        c.dx + r * 0.36,
-        c.dy + r * 0.26,
-      );
-    canvas.drawPath(smile, PaintKit.stroke(AppColors.outline, r * 0.11));
-    PaintKit.blush(
-      canvas,
-      c + Offset(-r * 0.46, r * 0.16),
-      r * 0.14,
-      alpha: 0.5,
-    );
-    PaintKit.blush(
-      canvas,
-      c + Offset(r * 0.46, r * 0.16),
-      r * 0.14,
-      alpha: 0.5,
+      c + Offset(-r * 0.18, -r * 0.16),
+      r * 0.16,
+      alpha: 0.35,
     );
   }
 
-  void _happyEye(Canvas canvas, Offset c, double r) {
+  void _horn(Canvas canvas, Offset tip, double len, bool up) {
+    final base = tip +
+        Offset(up ? len * 0.08 : len * 0.42, up ? len * 0.72 : len * 0.18);
     final path = Path()
-      ..moveTo(c.dx - r, c.dy)
-      ..quadraticBezierTo(c.dx, c.dy - r * 1.05, c.dx + r, c.dy);
-    canvas.drawPath(path, PaintKit.stroke(AppColors.outline, r * 0.4));
+      ..moveTo(tip.dx, tip.dy)
+      ..lineTo(base.dx - len * 0.16, base.dy)
+      ..lineTo(base.dx + len * 0.16, base.dy)
+      ..close();
+    PaintKit.blob(
+      canvas,
+      path,
+      color: const Color(0xFFFFF4DC),
+      width: len * 0.1,
+    );
+  }
+
+  /// Green T-rex head peeking from the bottom grass (home dino, head only).
+  void _trexHead(Canvas canvas, Offset c, double r) {
+    final line = AppColors.outline;
+    final w = r * 0.12;
+
+    PaintKit.blob(
+      canvas,
+      PaintKit.unionAll([
+        Path()..addOval(
+          Rect.fromCenter(center: c, width: r * 1.35, height: r * 1.25),
+        ),
+        Path()..addOval(
+          Rect.fromCenter(
+            center: c + Offset(r * 0.48, r * 0.08),
+            width: r * 1.0,
+            height: r * 0.7,
+          ),
+        ),
+      ]),
+      color: _greenDino,
+      width: w,
+    );
+    PaintKit.eye(
+      canvas,
+      c + Offset(-r * 0.06, -r * 0.1),
+      r * 0.22,
+      look: const Offset(0.28, -0.08),
+    );
+    canvas.drawCircle(
+      c + Offset(r * 0.74, r * 0.02),
+      r * 0.05,
+      PaintKit.fill(line),
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(c.dx + r * 0.18, c.dy + r * 0.22)
+        ..quadraticBezierTo(
+          c.dx + r * 0.42,
+          c.dy + r * 0.34,
+          c.dx + r * 0.64,
+          c.dy + r * 0.16,
+        ),
+      PaintKit.stroke(line, w * 0.7),
+    );
+    PaintKit.blush(canvas, c + Offset(r * 0.1, r * 0.16), r * 0.13, alpha: 0.5);
+    PaintKit.highlight(
+      canvas,
+      c + Offset(-r * 0.2, -r * 0.28),
+      r * 0.16,
+      alpha: 0.35,
+    );
   }
 
   void _pad(Canvas canvas, Offset c, double s) {
-    final r = s / 2;
-    final depth = pressed ? r * 0.1 : r * 0.28;
-    canvas.drawCircle(
-      c + Offset(0, depth),
-      r,
-      PaintKit.fill(AppColors.outline.withValues(alpha: 0.42)),
-    );
-    canvas.drawCircle(c, r, PaintKit.fill(live ? _green : _stone));
-    canvas.drawCircle(c, r, PaintKit.stroke(AppColors.outline, r * 0.14));
-    canvas.drawArc(
-      Rect.fromCircle(
-        center: c + Offset(-r * 0.08, -r * 0.1),
-        radius: r * 0.72,
-      ),
-      math.pi * 1.05,
-      math.pi * 0.7,
-      false,
-      PaintKit.stroke(
-        Colors.white.withValues(alpha: live ? 0.28 : 0.4),
-        r * 0.07,
-      ),
-    );
-    _carvedPrint(
-      canvas,
-      c + Offset(0, -r * 0.16),
-      r * 1.15,
-      live ? _greenPrint : _stonePrint,
-    );
-  }
+    final depth = pressed ? s * 0.045 : s * 0.11;
+    final fill = live ? _green : _stone;
+    final ovals = _PadGeom.ovals(c, s);
+    final strokeW = s * 0.048;
 
-  void _carvedPrint(Canvas canvas, Offset c, double s, Color color) {
-    final line = AppColors.outline.withValues(alpha: 0.55);
-    final w = s * 0.035;
-    void pad(Offset o, double ww, double hh) {
-      final rect = Rect.fromCenter(center: c + o, width: ww, height: hh);
-      canvas.drawOval(rect, PaintKit.fill(color));
-      canvas.drawOval(rect, PaintKit.stroke(line, w));
+    for (final oval in ovals) {
+      canvas.drawOval(
+        oval.shift(Offset(0, depth)),
+        PaintKit.fill(AppColors.outline.withValues(alpha: 0.42)),
+      );
+    }
+    for (final oval in ovals) {
+      canvas.drawOval(oval, PaintKit.fill(fill));
+    }
+    for (final oval in ovals) {
+      canvas.drawOval(oval, PaintKit.stroke(AppColors.outline, strokeW));
     }
 
-    pad(Offset(0, s * 0.2), s * 0.28, s * 0.18);
-    pad(Offset(-s * 0.2, -s * 0.02), s * 0.16, s * 0.22);
-    pad(Offset(0, -s * 0.12), s * 0.17, s * 0.28);
-    pad(Offset(s * 0.2, -s * 0.02), s * 0.16, s * 0.22);
+    final heel = ovals.first;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: heel.center + Offset(-heel.width * 0.12, -heel.height * 0.16),
+        width: heel.width * 0.42,
+        height: heel.height * 0.28,
+      ),
+      PaintKit.fill(Colors.white.withValues(alpha: live ? 0.22 : 0.38)),
+    );
+    for (final oval in ovals.skip(1)) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: oval.center + Offset(-oval.width * 0.12, -oval.height * 0.16),
+          width: oval.width * 0.38,
+          height: oval.height * 0.26,
+        ),
+        PaintKit.fill(Colors.white.withValues(alpha: live ? 0.18 : 0.32)),
+      );
+    }
   }
 
   void _dirtBurst(Canvas canvas, Offset c, double s) {
     const clods = [
-      (Offset(-0.55, -0.85), 0.034),
-      (Offset(0.05, -1.1), 0.028),
-      (Offset(0.7, -0.55), 0.032),
-      (Offset(0.85, 0.2), 0.024),
-      (Offset(0.25, 0.7), 0.03),
-      (Offset(-0.45, 0.5), 0.022),
-      (Offset(-0.1, -0.15), 0.02),
+      (Offset(-0.55, -0.85), 0.038),
+      (Offset(0.08, -1.15), 0.03),
+      (Offset(0.72, -0.5), 0.034),
+      (Offset(0.88, 0.22), 0.026),
+      (Offset(0.28, 0.72), 0.032),
+      (Offset(-0.48, 0.52), 0.024),
+      (Offset(-0.08, -0.12), 0.022),
+      (Offset(0.42, -0.08), 0.018),
     ];
     for (var i = 0; i < clods.length; i++) {
       final (o, r) = clods[i];
@@ -586,27 +749,22 @@ class _GrassPadPainter extends CustomPainter {
           width: s * r * 2.2,
           height: s * r * 1.45,
         ),
-        PaintKit.fill(_dirt.withValues(alpha: 0.88 - i * 0.05)),
+        PaintKit.fill(_dirt.withValues(alpha: 0.9 - i * 0.04)),
       );
     }
   }
 
   void _miniPrint(Canvas canvas, Offset c, double s) {
-    final fill = const Color(0xFF5A3A1E);
-    void oval(Offset o, double w, double h) {
-      canvas.drawOval(
-        Rect.fromCenter(center: c + o, width: w, height: h),
-        PaintKit.fill(fill),
-      );
+    const fill = Color(0xFF5A3A1E);
+    for (final oval in _PadGeom.ovals(c, s)) {
+      canvas.drawOval(oval, PaintKit.fill(fill));
     }
-
-    oval(Offset(0, s * 0.28), s * 0.55, s * 0.4);
-    oval(Offset(-s * 0.22, -s * 0.08), s * 0.28, s * 0.4);
-    oval(Offset(0, -s * 0.22), s * 0.3, s * 0.48);
-    oval(Offset(s * 0.22, -s * 0.08), s * 0.28, s * 0.4);
   }
 
   @override
   bool shouldRepaint(_GrassPadPainter old) =>
-      old.live != live || old.pressed != pressed || old.stamp != stamp;
+      old.live != live ||
+      old.pressed != pressed ||
+      old.stamp != stamp ||
+      old.won != won;
 }

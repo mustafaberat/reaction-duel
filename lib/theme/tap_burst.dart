@@ -19,7 +19,11 @@ class TapBurstSpec {
     this.winning = false,
     this.player = Player.p1,
     this.reduceMotion = false,
+    this.persist = false,
   });
+
+  /// Frame where dirt is airborne and the print is fully stamped.
+  static const double holdProgress = 0.28;
 
   /// Local alignment in the half, 0–1.
   final double dx;
@@ -28,6 +32,9 @@ class TapBurstSpec {
   final bool winning;
   final Player player;
   final bool reduceMotion;
+
+  /// Too-early stamp: stay fully visible (no fade) until the next round.
+  final bool persist;
 }
 
 class TapBurstLayer extends StatelessWidget {
@@ -68,7 +75,7 @@ class TapBurstPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final b in bursts) {
       final c = Offset(b.dx * size.width, b.dy * size.height);
-      final t = b.progress.clamp(0.0, 1.0);
+      final t = b.persist ? TapBurstSpec.holdProgress : b.progress.clamp(0.0, 1.0);
       _burst(canvas, c, t, b);
     }
   }

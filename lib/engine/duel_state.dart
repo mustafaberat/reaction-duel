@@ -104,6 +104,7 @@ class DuelState {
     this.signalAt,
     this.lastResult,
     this.matchWinner,
+    this.tappedThisRound = const [false, false],
   });
 
   final DuelPhase phase;
@@ -123,8 +124,13 @@ class DuelState {
   final RoundResult? lastResult;
   final Player? matchWinner;
 
+  /// Per-player lock for the current round. First pointer-down counts;
+  /// later taps on that half are ignored until the next waiting period.
+  final List<bool> tappedThisRound;
+
   int scoreOf(Player p) => scores[p.index];
   PlayerStats statsOf(Player p) => stats[p.index];
+  bool hasTapped(Player p) => tappedThisRound[p.index];
 
   bool get isSignal => phase == DuelPhase.signal;
   bool get inputLocked => switch (phase) {
@@ -147,6 +153,8 @@ class DuelState {
     bool clearResult = false,
     Player? matchWinner,
     bool clearWinner = false,
+    List<bool>? tappedThisRound,
+    bool clearTapped = false,
   }) {
     return DuelState(
       phase: phase ?? this.phase,
@@ -159,6 +167,9 @@ class DuelState {
       signalAt: clearSignal ? null : (signalAt ?? this.signalAt),
       lastResult: clearResult ? null : (lastResult ?? this.lastResult),
       matchWinner: clearWinner ? null : (matchWinner ?? this.matchWinner),
+      tappedThisRound: clearTapped
+          ? const [false, false]
+          : (tappedThisRound ?? this.tappedThisRound),
     );
   }
 }

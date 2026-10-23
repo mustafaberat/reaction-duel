@@ -65,6 +65,52 @@ void main() {
     expect(find.text('POW!'), findsNothing);
   });
 
+  testWidgets('persist stamp stays visible at progress 1', (tester) async {
+    Future<List<int>> bytes({required bool persist, required double progress}) async {
+      final key = GlobalKey();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 220,
+                height: 220,
+                child: RepaintBoundary(
+                  key: key,
+                  child: TapBurstLayer(
+                    bursts: [
+                      TapBurstSpec(
+                        dx: 0.5,
+                        dy: 0.5,
+                        progress: progress,
+                        persist: persist,
+                        player: Player.p1,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final png = await tester.runAsync(() async {
+        final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final image = await boundary.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        return data!.buffer.asUint8List();
+      });
+      return png!;
+    }
+
+    final faded = await bytes(persist: false, progress: 1);
+    final held = await bytes(persist: true, progress: 1);
+    final peak = await bytes(persist: false, progress: TapBurstSpec.holdProgress);
+    expect(held, isNot(faded));
+    expect(held, peak);
+  });
+
   testWidgets('p1 and p2 stamp the same 3-toed track', (tester) async {
     Future<List<int>> bytesFor(Player player) async {
       final key = GlobalKey();

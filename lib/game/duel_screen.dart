@@ -18,6 +18,7 @@ import '../l10n/app_localizations.dart';
 import '../services/settings_service.dart';
 import '../theme/tap_burst.dart';
 import 'duel_board.dart';
+import 'half_pad.dart';
 import 'match_end_overlay.dart';
 import 'pause_overlay.dart';
 
@@ -151,7 +152,8 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
     });
   }
 
-  void _onTap(Player player, PointerDownEvent event) {
+  PadTapAck _onTap(Player player, PointerDownEvent event) {
+    if (_engine.state.hasTapped(player)) return PadTapAck.ignore;
     final s = _engine.state;
     final signalAt = s.signalAt;
     Duration? at;
@@ -169,7 +171,10 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
         if (delta > -_sanity && delta < limit) at = signalAt + delta;
       }
     }
-    _engine.tap(player, at: at);
+    if (!_engine.tap(player, at: at)) return PadTapAck.ignore;
+    final result = _engine.state.lastResult;
+    if (result?.foulBy == player) return PadTapAck.hold;
+    return PadTapAck.burst;
   }
 
   void _pause() => _engine.pause();

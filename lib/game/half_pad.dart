@@ -18,6 +18,9 @@ import 'score_dots.dart';
 
 enum ResultTone { win, lose, foul, neutral }
 
+/// Whether this pointer-down should splash, hold the stamp, or be ignored.
+enum PadTapAck { ignore, burst, hold }
+
 /// What the half shows in its center after a round. Every outcome carries
 /// text (and fouls an ✕ icon), never color alone.
 class HalfResult {
@@ -59,6 +62,7 @@ class HalfPad extends StatefulWidget {
     this.player = Player.p1,
     this.mood = CharacterMood.waiting,
     this.frozenBursts = const [],
+    this.tapLocked = false,
     this.onPointerDown,
     super.key,
   });
@@ -92,7 +96,10 @@ class HalfPad extends StatefulWidget {
   final Player player;
   final CharacterMood mood;
   final List<TapBurstSpec> frozenBursts;
-  final PointerDownEventListener? onPointerDown;
+
+  /// Engine lock: this player already used their tap this round.
+  final bool tapLocked;
+  final PadTapAck Function(PointerDownEvent event)? onPointerDown;
 
   @override
   State<HalfPad> createState() => _HalfPadState();
@@ -113,11 +120,16 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
     value: 1,
   );
   final List<_LiveTap> _taps = [];
+  final List<TapBurstSpec> _held = [];
 
   @override
   void didUpdateWidget(HalfPad old) {
     super.didUpdateWidget(old);
     if (widget.shakeTrigger > old.shakeTrigger) _shake.forward(from: 0);
+    if (widget.player != old.player ||
+        (!widget.tapLocked && _held.isNotEmpty)) {
+      _held.clear();
+    }
   }
 
   @override
@@ -130,21 +142,36 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
   }
 
   void _onPointerDown(PointerDownEvent event) {
-    widget.onPointerDown?.call(event);
+    if (widget.tapLocked) return;
+    final ack = widget.onPointerDown?.call(event) ?? PadTapAck.burst;
+    if (ack == PadTapAck.ignore) return;
     final box = context.findRenderObject() as RenderBox?;
     if (box == null || !box.hasSize) return;
     final local = box.globalToLocal(event.position);
     final size = box.size;
     if (size.width <= 0 || size.height <= 0) return;
+    final dx = (local.dx / size.width).clamp(0.08, 0.92);
+    final dy = (local.dy / size.height).clamp(0.12, 0.82);
+    if (ack == PadTapAck.hold) {
+      setState(() {
+        _held.add(
+          TapBurstSpec(
+            dx: dx,
+            dy: dy,
+            progress: TapBurstSpec.holdProgress,
+            player: widget.player,
+            reduceMotion: widget.reduceMotion,
+            persist: true,
+          ),
+        );
+      });
+      return;
+    }
     final controller = AnimationController(
       vsync: this,
       duration: widget.reduceMotion ? AppMotion.fast : AppMotion.tapBurst,
     );
-    final tap = _LiveTap(
-      (local.dx / size.width).clamp(0.08, 0.92),
-      (local.dy / size.height).clamp(0.12, 0.82),
-      controller,
-    );
+    final tap = _LiveTap(dx, dy, controller);
     _taps.add(tap);
     controller
       ..addListener(() {
@@ -248,6 +275,7 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
                 TapBurstLayer(
                   bursts: [
                     ...widget.frozenBursts,
+                    ..._held,
                     for (final t in _taps)
                       TapBurstSpec(
                         dx: t.dx,

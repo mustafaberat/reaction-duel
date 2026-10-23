@@ -17,7 +17,7 @@ import 'duel_labels.dart';
 import 'half_pad.dart';
 import 'signal_orb.dart';
 
-typedef HalfTap = void Function(Player player, PointerDownEvent event);
+typedef HalfTap = PadTapAck Function(Player player, PointerDownEvent event);
 
 class DuelBoard extends StatelessWidget {
   const DuelBoard({
@@ -106,6 +106,7 @@ class DuelBoard extends StatelessWidget {
           for (final b in frozenBursts)
             if (b.$1 == p) b.$2,
         ],
+        tapLocked: state.hasTapped(p),
         onPointerDown: onTap == null ? null : (e) => onTap!(p, e),
       );
     }

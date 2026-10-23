@@ -112,6 +112,7 @@ class DuelEngine {
         clearOrb: true,
         clearSignal: true,
         clearResult: true,
+        clearTapped: true,
       ),
     );
   }
@@ -202,32 +203,42 @@ class DuelEngine {
   }
 
   /// A new pointer went down on [player]'s half at engine time [at].
-  void tap(Player player, {Duration? at}) {
+  ///
+  /// Returns `true` when this is the player's first tap of the round and it
+  /// was consumed. A locked player gets no splash, no score change, and no
+  /// extra foul.
+  bool tap(Player player, {Duration? at}) {
+    if (_state.hasTapped(player)) return false;
     final time = at ?? clock.now();
     switch (_state.phase) {
       case DuelPhase.waiting:
+        _lock(player);
         _foul(player, FoulReason.early);
+        return true;
       case DuelPhase.decoy:
+        _lock(player);
         _foul(player, FoulReason.decoy);
+        return true;
       case DuelPhase.signal:
-        _tapDuringSignal(player, time);
+        return _tapDuringSignal(player, time);
       case DuelPhase.scored:
       case DuelPhase.matchOver:
-        _maybeRecordLoser(player, time);
+        return _maybeRecordLoser(player, time);
       case DuelPhase.ready:
       case DuelPhase.foul:
       case DuelPhase.noContest:
       case DuelPhase.tie:
       case DuelPhase.paused:
-        break;
+        return false;
     }
   }
 
-  void _tapDuringSignal(Player player, Duration at) {
+  bool _tapDuringSignal(Player player, Duration at) {
     final signalAt = _signalAt!;
     final pending = _pending;
     if (pending != null) {
-      if (pending.player == player) return;
+      if (pending.player == player) return false;
+      _lock(player);
       final delta = at - pending.at;
       if (delta.abs() < _tieWindow) {
         _resolveTie(pending, _PendingTap(player, at));
@@ -236,22 +247,26 @@ class DuelEngine {
       } else {
         _resolveWin(pending.player, pending.at, at);
       }
-      return;
+      return true;
     }
     final reaction = at - signalAt;
     if (reaction.isNegative) {
+      _lock(player);
       _foul(player, FoulReason.early);
-      return;
+      return true;
     }
     if (_state.settings.guessGuard && reaction < _guess) {
+      _lock(player);
       _foul(player, FoulReason.guess);
-      return;
+      return true;
     }
+    _lock(player);
     _pending = _PendingTap(player, at);
     _notify();
+    return true;
   }
 
-  void _maybeRecordLoser(Player player, Duration at) {
+  bool _maybeRecordLoser(Player player, Duration at) {
     final result = _state.lastResult;
     final signalAt = _state.signalAt;
     if (result == null ||
@@ -259,13 +274,22 @@ class DuelEngine {
         result.outcome != RoundOutcome.scored ||
         result.winner == player ||
         result.loserMs != null) {
-      return;
+      return false;
     }
     final ms = _ms(at - signalAt);
-    if (ms > GameTiming.signalTimeoutMs) return;
+    if (ms > GameTiming.signalTimeoutMs) return false;
+    _lock(player);
     final stats = [..._state.stats];
     stats[player.index] = stats[player.index].addReaction(ms);
     _emit(_state.copyWith(lastResult: result.withLoserMs(ms), stats: stats));
+    return true;
+  }
+
+  void _lock(Player player) {
+    if (_state.hasTapped(player)) return;
+    final tapped = [..._state.tappedThisRound];
+    tapped[player.index] = true;
+    _state = _state.copyWith(tappedThisRound: tapped);
   }
 
   void _foul(Player player, FoulReason reason) {
@@ -411,6 +435,7 @@ class DuelEngine {
         clearOrb: true,
         clearSignal: true,
         clearResult: true,
+        clearTapped: true,
       ),
     );
   }

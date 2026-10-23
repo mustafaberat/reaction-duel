@@ -33,7 +33,7 @@ class ReactionDuelApp extends StatelessWidget {
       builder: (context, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-        theme: AppTheme.dark,
+        theme: AppTheme.current,
         locale: services.settings.locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -68,8 +68,8 @@ Future<void> bootstrap() async {
     const SystemUiOverlayStyle(
       statusBarColor: AppColors.transparent,
       systemNavigationBarColor: AppColors.background,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 

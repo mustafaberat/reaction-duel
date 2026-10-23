@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 abstract final class AdConfig {
   // Google sample ids — https://developers.google.com/admob/android/test-ads
@@ -24,4 +25,20 @@ abstract final class AdConfig {
 
   static String get matchEndInterstitial =>
       kReleaseMode ? releaseMatchEndInterstitial : testInterstitial;
+
+  /// Play Families (all ages, including under 5). Apply before and after
+  /// [MobileAds.initialize]. TFCD / TFUA stay set: `google_mobile_ads` 9.x
+  /// also wants [AgeRestrictedTreatment.child].
+  static RequestConfiguration get familiesRequestConfiguration {
+    return RequestConfiguration(
+      maxAdContentRating: MaxAdContentRating.g,
+      // ignore: deprecated_member_use
+      tagForChildDirectedTreatment: TagForChildDirectedTreatment.yes,
+      // ignore: deprecated_member_use
+      tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.yes,
+      ageRestrictedTreatment: AgeRestrictedTreatment.child,
+    );
+  }
+
+  static const AdRequest request = AdRequest(nonPersonalizedAds: true);
 }

@@ -8,6 +8,9 @@ import '../components/app_button.dart';
 import '../config/tokens.dart';
 import '../engine/duel_state.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/celebration.dart';
+import '../theme/characters.dart';
+import '../theme/decor.dart';
 
 class MatchEndOverlay extends StatelessWidget {
   const MatchEndOverlay({
@@ -41,18 +44,24 @@ class MatchEndOverlay extends StatelessWidget {
       duration: AppMotion.medium,
       builder: (context, t, child) => Opacity(opacity: t, child: child),
       child: ColoredBox(
-        color: AppColors.background,
-        child: Column(
+        color: AppColors.scrim,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Expanded(
-              child: RotatedBox(
-                quarterTurns: 2,
-                child: _EndPanel(overlay: this, edgeInset: padding.top),
-              ),
-            ),
-            const Divider(height: AppDimens.hairline, color: AppColors.hairline),
-            Expanded(
-              child: _EndPanel(overlay: this, edgeInset: padding.bottom),
+            const ThemeDecor(kind: DecorKind.overlay),
+            Column(
+              children: [
+                Expanded(
+                  child: RotatedBox(
+                    quarterTurns: 2,
+                    child: _EndPanel(overlay: this, edgeInset: padding.top),
+                  ),
+                ),
+                Divider(height: AppDimens.hairline, color: AppColors.hairline),
+                Expanded(
+                  child: _EndPanel(overlay: this, edgeInset: padding.bottom),
+                ),
+              ],
             ),
           ],
         ),
@@ -79,80 +88,118 @@ class _EndPanel extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppDimens.page,
-        AppDimens.gapL,
+        AppDimens.gapM,
         AppDimens.page,
-        AppDimens.gapL + edgeInset,
+        AppDimens.gapM + edgeInset,
       ),
       child: Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: SizedBox(
-            width: AppDimens.endPanelMaxWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: AppDimens.dot,
-                      height: AppDimens.dot,
-                      decoration: BoxDecoration(color: winnerHue.ink, shape: BoxShape.circle),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: AppDimens.endPanelMaxWidth),
+          child: Column(
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: SizedBox(
+                    width: AppDimens.endPanelMaxWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: AppDimens.characterEndWin + 28,
+                          width: AppDimens.endPanelMaxWidth,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.bottomCenter,
+                            children: [
+                              const Positioned.fill(child: ConfettiBurst()),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  CharacterView(
+                                    player: winner,
+                                    mood: CharacterMood.happy,
+                                    size: AppDimens.characterEndWin,
+                                    crowned: true,
+                                  ),
+                                  const SizedBox(width: AppDimens.gapL),
+                                  CharacterView(
+                                    player: loser,
+                                    mood: CharacterMood.nextTime,
+                                    size: AppDimens.characterEndLose,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppDimens.gapS),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: AppDimens.dot,
+                              height: AppDimens.dot,
+                              decoration: BoxDecoration(color: winnerHue.ink, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: AppDimens.gapS),
+                            Flexible(
+                              child: Text(
+                                l10n.endWinner(overlay.names[winner.index]),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.displayMedium!.copyWith(fontSize: AppType.endName),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppDimens.gapXs),
+                        Text(
+                          '${s.scoreOf(winner)}${AppGlyphs.scoreDash}${s.scoreOf(loser)}',
+                          style: theme.displayLarge!.copyWith(
+                            fontSize: AppType.endScore,
+                            fontFeatures: AppFonts.tabular,
+                          ),
+                        ),
+                        if (overlay.newRecord) ...[
+                          const SizedBox(height: AppDimens.gapS),
+                          _Badge(text: l10n.endNewRecord),
+                        ],
+                        const SizedBox(height: AppDimens.gapM),
+                        _StatsTable(overlay: overlay),
+                      ],
                     ),
-                    const SizedBox(width: AppDimens.gapS),
-                    Flexible(
-                      child: Text(
-                        l10n.endWinner(overlay.names[winner.index]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.displayMedium!.copyWith(fontSize: AppType.endName),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppDimens.gapXs),
-                Text(
-                  '${s.scoreOf(winner)}${AppGlyphs.scoreDash}${s.scoreOf(loser)}',
-                  style: theme.displayLarge!.copyWith(
-                    fontSize: AppType.endScore,
-                    color: winnerHue.ink,
-                    fontFeatures: AppFonts.tabular,
                   ),
                 ),
-                if (overlay.newRecord) ...[
-                  const SizedBox(height: AppDimens.gapS),
-                  _Badge(text: l10n.endNewRecord),
+              ),
+              const SizedBox(height: AppDimens.gapM),
+              AppButton(
+                label: l10n.endRematch,
+                icon: Icons.replay_rounded,
+                onPressed: overlay.onRematch,
+              ),
+              const SizedBox(height: AppDimens.gapS),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: AppButton.ghost(
+                      label: l10n.endChangeSettings,
+                      expand: true,
+                      onPressed: overlay.onChangeSettings,
+                    ),
+                  ),
+                  Expanded(
+                    child: AppButton.ghost(
+                      label: l10n.home,
+                      expand: true,
+                      onPressed: overlay.onHome,
+                    ),
+                  ),
                 ],
-                const SizedBox(height: AppDimens.gapL),
-                _StatsTable(overlay: overlay),
-                const SizedBox(height: AppDimens.gapL),
-                AppButton(
-                  label: l10n.endRematch,
-                  icon: Icons.replay_rounded,
-                  onPressed: overlay.onRematch,
-                ),
-                const SizedBox(height: AppDimens.gapS),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: AppButton.ghost(
-                        label: l10n.endChangeSettings,
-                        expand: true,
-                        onPressed: overlay.onChangeSettings,
-                      ),
-                    ),
-                    Expanded(
-                      child: AppButton.ghost(
-                        label: l10n.home,
-                        expand: true,
-                        onPressed: overlay.onHome,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -241,7 +288,7 @@ class _Badge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.bolt_rounded, size: AppDimens.iconSmall, color: AppColors.accent),
+          Icon(Icons.bolt_rounded, size: AppDimens.iconSmall, color: AppColors.accent),
           const SizedBox(width: AppDimens.gapXs),
           Text(
             text,

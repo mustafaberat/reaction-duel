@@ -1,19 +1,23 @@
-/// Material theme built from tokens.
+/// Material theme built from the Dino Pals tokens.
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'tokens.dart';
 
 abstract final class AppTheme {
-  static ThemeData get dark {
-    const colors = ColorScheme.dark(
+  static ThemeData get current {
+    const colors = ColorScheme(
+      brightness: Brightness.light,
       surface: AppColors.background,
       primary: AppColors.accent,
       onPrimary: AppColors.onAccent,
       onSurface: AppColors.text,
       secondary: AppColors.text,
+      onSecondary: AppColors.background,
       error: AppColors.danger,
+      onError: AppColors.highlight,
     );
 
     TextStyle body(double size, FontWeight weight, Color color) => TextStyle(
@@ -25,19 +29,24 @@ abstract final class AppTheme {
       height: AppType.bodyHeight,
     );
 
-    TextStyle display(double size, FontWeight weight) => TextStyle(
-      fontFamily: AppFonts.display,
-      fontFamilyFallback: AppFonts.fallback,
-      fontSize: size,
-      fontWeight: weight,
-      color: AppColors.text,
-      letterSpacing: AppType.tightTracking,
-      height: AppType.heroHeight,
-    );
+    /// Display face: dark-brown fill + cream halo so Luckiest Guy stays
+    /// readable on sand / cream. The sky title opts into the yellow sticker.
+    TextStyle display(double size, FontWeight weight, {bool halo = true}) {
+      return TextStyle(
+        fontFamily: AppFonts.display,
+        fontFamilyFallback: AppFonts.fallback,
+        fontSize: size,
+        fontWeight: weight,
+        color: AppColors.text,
+        letterSpacing: halo ? AppType.displayTracking : AppType.tightTracking,
+        height: AppType.heroHeight,
+        shadows: halo ? AppType.displayHalo : null,
+      );
+    }
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       colorScheme: colors,
       fontFamily: AppFonts.body,
       fontFamilyFallback: AppFonts.fallback,
@@ -46,7 +55,7 @@ abstract final class AppTheme {
       textTheme: TextTheme(
         displayLarge: display(AppType.hero, FontWeight.w800),
         displayMedium: display(AppType.display, FontWeight.w700),
-        titleLarge: display(AppType.title, FontWeight.w700),
+        titleLarge: display(AppType.title, FontWeight.w700, halo: false),
         titleMedium: body(AppType.body, FontWeight.w600, AppColors.text),
         bodyLarge: body(AppType.body, FontWeight.w400, AppColors.text),
         bodyMedium: body(AppType.bodySmall, FontWeight.w400, AppColors.textMuted),
@@ -77,6 +86,21 @@ abstract final class AppTheme {
         showDragHandle: true,
         dragHandleColor: AppColors.stroke,
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.surfaceHigh,
+        contentTextStyle: body(AppType.bodySmall, FontWeight.w500, AppColors.text),
+      ),
+      appBarTheme: const AppBarTheme(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: AppColors.transparent,
+          systemNavigationBarColor: AppColors.background,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+      ),
     );
   }
+
+  /// Kept for callers that still say `AppTheme.dark`.
+  static ThemeData get dark => current;
 }

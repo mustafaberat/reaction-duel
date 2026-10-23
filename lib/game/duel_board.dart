@@ -10,6 +10,9 @@ import '../config/tokens.dart';
 import '../engine/duel_settings.dart';
 import '../engine/duel_state.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/characters.dart';
+import '../theme/orb_frame.dart';
+import '../theme/tap_burst.dart';
 import 'duel_labels.dart';
 import 'half_pad.dart';
 import 'signal_orb.dart';
@@ -30,6 +33,7 @@ class DuelBoard extends StatelessWidget {
     this.safeTop = 0,
     this.safeBottom = 0,
     this.pauseButton,
+    this.frozenBursts = const [],
     super.key,
   });
 
@@ -52,6 +56,7 @@ class DuelBoard extends StatelessWidget {
   final double safeTop;
   final double safeBottom;
   final Widget? pauseButton;
+  final List<(Player, TapBurstSpec)> frozenBursts;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +98,9 @@ class DuelBoard extends StatelessWidget {
             ? AppDimens.pauseButton + AppDimens.gapM
             : 0,
         reduceMotion: reduceMotion,
+        player: p,
+        mood: moodFor(p, state),
+        frozenBursts: [for (final b in frozenBursts) if (b.$1 == p) b.$2],
         onPointerDown: onTap == null ? null : (e) => onTap!(p, e),
       );
     }
@@ -133,16 +141,19 @@ class DuelBoard extends StatelessWidget {
               },
               waitText: l10n.duelWait,
               goText: l10n.duelGo,
-              orb: SignalOrb(
-                fill: state.orbColor == null ? null : AppColors.signal(state.orbColor!),
-                shape: state.orbShape,
-                calm: true,
-                reduceMotion: reduceMotion,
-                pulseTrigger: state.phase == DuelPhase.scored || state.phase == DuelPhase.matchOver
-                    ? state.round
-                    : 0,
-                pulseUp: pulseUp,
-                pulseColor: last?.winner == null ? AppColors.text : hues[last!.winner!.index].ink,
+              orb: OrbFrame(
+                size: AppDimens.orbDuel,
+                child: SignalOrb(
+                  fill: state.orbColor == null ? null : AppColors.signal(state.orbColor!),
+                  shape: state.orbShape,
+                  calm: true,
+                  reduceMotion: reduceMotion,
+                  pulseTrigger: state.phase == DuelPhase.scored || state.phase == DuelPhase.matchOver
+                      ? state.round
+                      : 0,
+                  pulseUp: pulseUp,
+                  pulseColor: last?.winner == null ? AppColors.text : hues[last!.winner!.index].ink,
+                ),
               ),
             ),
           ),
@@ -276,7 +287,7 @@ class _CenterCue extends StatelessWidget {
 
   /// Fixed height keeps the orb centered whatever the cue.
   Widget _slot(Widget child) => SizedBox(
-    height: AppType.cueGo * AppType.heroHeight + AppDimens.gapXs,
+    height: AppType.cueGo * AppType.heroHeight + AppDimens.gapL,
     child: Center(child: child),
   );
 
@@ -289,7 +300,7 @@ class _CenterCue extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.do_not_touch_outlined,
               size: AppDimens.cueIcon,
               color: AppColors.waitCue,
@@ -308,14 +319,27 @@ class _CenterCue extends StatelessWidget {
           ],
         );
       case _Cue.go:
-        return Text(
-          goText,
-          style: theme.displayLarge!.copyWith(
-            fontFamily: AppFonts.display,
-            fontWeight: FontWeight.w800,
-            fontSize: AppType.cueGo,
-            height: AppType.heroHeight,
-            color: AppColors.onSignal,
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.highlight.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.outline, width: 3.5),
+            boxShadow: const [
+              BoxShadow(color: Color(0x66000000), blurRadius: 0, offset: Offset(0, 3)),
+            ],
+          ),
+          child: Text(
+            goText,
+            style: theme.displayLarge!.copyWith(
+              fontFamily: AppFonts.display,
+              fontWeight: FontWeight.w800,
+              fontSize: AppType.cueGo,
+              height: AppType.heroHeight,
+              letterSpacing: AppType.tightTracking,
+              color: AppColors.outline,
+              shadows: const [],
+            ),
           ),
         );
     }

@@ -1,4 +1,4 @@
-# Reaction Duel — Yapılacaklar
+# Reaction Rivals — Yapılacaklar
 
 ## En iyi skor
 - [x] En iyi skor (en hızlı tepki süresi, ms) şu an cihazda yerel tutuluyor:

@@ -22,6 +22,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -46,3 +47,27 @@ flutter:
           weight: 700
         - asset: assets/fonts/Sora-ExtraBold.ttf
           weight: 800
+    - family: LuckiestGuy
+      fonts:
+        - asset: assets/fonts/LuckiestGuy-Regular.ttf
+          weight: 400
+    - family: LilitaOne
+      fonts:
+        - asset: assets/fonts/LilitaOne-Regular.ttf
+          weight: 400
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/app_icon.png
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  background_color_ios: "#0D0E11"
+  adaptive_icon_background: "#0D0E11"
+  adaptive_icon_foreground: assets/icon/app_icon.png
+  adaptive_icon_foreground_inset: 16
+  web:
+    generate: true
+    image_path: assets/icon/app_icon.png
+    background_color: "#0D0E11"
+    theme_color: "#0D0E11"

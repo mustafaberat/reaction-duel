@@ -28,12 +28,10 @@ void _phone(WidgetTester tester) {
 void main() {
   testWidgets('home renders in Turkish and opens match setup', (tester) async {
     _phone(tester);
-    final services = await _services({PrefsKeys.language: 'tr', PrefsKeys.howToSeen: true});
-    await tester.pumpWidget(
-      ReactionDuelApp(services: services, home: const HomeScreen(autoOpenHowTo: false)),
-    );
+    final services = await _services({PrefsKeys.language: 'tr'});
+    await tester.pumpWidget(ReactionDuelApp(services: services, home: const HomeScreen()));
     await tester.pump();
-    expect(find.text('Refleks Düellosu'), findsOneWidget);
+    expect(find.text('Reaction Rivals'), findsOneWidget);
     await tester.tap(find.text('Oyna'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
@@ -42,14 +40,12 @@ void main() {
 
   testWidgets('live language switch updates the UI', (tester) async {
     _phone(tester);
-    final services = await _services({PrefsKeys.language: 'tr', PrefsKeys.howToSeen: true});
-    await tester.pumpWidget(
-      ReactionDuelApp(services: services, home: const HomeScreen(autoOpenHowTo: false)),
-    );
+    final services = await _services({PrefsKeys.language: 'tr'});
+    await tester.pumpWidget(ReactionDuelApp(services: services, home: const HomeScreen()));
     await tester.pump();
     await services.settings.setLanguage('en');
     await tester.pump();
-    expect(find.text('Reaction Duel'), findsOneWidget);
+    expect(find.text('Reaction Rivals'), findsOneWidget);
   });
 
   testWidgets('pointer down on a half during waiting is a foul', (tester) async {

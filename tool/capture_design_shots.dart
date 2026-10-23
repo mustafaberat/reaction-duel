@@ -56,7 +56,6 @@ void main() {
     );
     SharedPreferences.setMockInitialValues({
       PrefsKeys.language: 'tr',
-      PrefsKeys.howToSeen: true,
       PrefsKeys.onboardingDone: true,
       PrefsKeys.bestReactionMs: 187,
       PrefsKeys.totalMatches: 12,
@@ -76,7 +75,7 @@ void main() {
 
     // --- Turkish ---
     await settings.setMatch(classicConfig);
-    await shot('01-home', const HomeScreen(autoOpenHowTo: false));
+    await shot('01-home', const HomeScreen());
     await shot('02-match-setup', const MatchSetupScreen());
 
     await shot('03-duel-waiting', _duel(classicConfig, _Scene.waiting));
@@ -90,7 +89,7 @@ void main() {
 
     // --- English ---
     await settings.setLanguage('en');
-    await shot('01-home-en', const HomeScreen(autoOpenHowTo: false));
+    await shot('01-home-en', const HomeScreen());
     await shot(
       '04-duel-signal-en',
       _duel(classicConfig.copyWith(p1Name: 'Alex', p2Name: 'Sam'), _Scene.signal),

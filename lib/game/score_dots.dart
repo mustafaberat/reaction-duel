@@ -1,9 +1,10 @@
-/// ●●○ score row: filled = points, hollow = remaining to win.
+/// Themed score row: filled = points, hollow = remaining to win.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../config/tokens.dart';
+import '../theme/score_marks.dart';
 
 class ScoreDots extends StatelessWidget {
   const ScoreDots({
@@ -29,19 +30,7 @@ class ScoreDots extends StatelessWidget {
         runSpacing: AppDimens.dotGap,
         children: [
           for (var i = 0; i < total; i++)
-            AnimatedContainer(
-              duration: AppMotion.fast,
-              width: AppDimens.dot,
-              height: AppDimens.dot,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: i < score ? color : AppColors.transparent,
-                border: Border.all(
-                  color: i < score ? color : emptyColor,
-                  width: AppDimens.dotStroke,
-                ),
-              ),
-            ),
+            ScoreMark(filled: i < score, color: color, emptyColor: emptyColor),
         ],
       ),
     );

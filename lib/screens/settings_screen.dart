@@ -14,6 +14,7 @@ import '../config/app_config.dart';
 import '../config/tokens.dart';
 import '../l10n/app_localizations.dart';
 import '../services/settings_service.dart';
+import '../theme/decor.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -25,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
     final theme = Theme.of(context).textTheme;
     final lang = settings.language;
 
-    return Scaffold(
+    return ThemedScaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -77,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.motion_photos_off_outlined,
                                       size: AppDimens.icon,
                                       color: AppColors.textMuted,
@@ -165,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
           final selected = settings.language == code;
           return ListTile(
             title: Text(label, style: Theme.of(sheetContext).textTheme.titleMedium),
-            trailing: selected ? const Icon(Icons.check_rounded, color: AppColors.accent) : null,
+            trailing: selected ? Icon(Icons.check_rounded, color: AppColors.accent) : null,
             onTap: () {
               settings.setLanguage(code);
               Navigator.of(sheetContext).pop();

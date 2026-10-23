@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../components/app_button.dart';
 import '../config/tokens.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/decor.dart';
 
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({
@@ -23,12 +24,18 @@ class PauseOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
     return ColoredBox(
-      color: AppColors.background,
-      child: Column(
+      color: AppColors.scrim,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(child: RotatedBox(quarterTurns: 2, child: _panel(context, padding.top))),
-          const Divider(height: AppDimens.hairline, color: AppColors.hairline),
-          Expanded(child: _panel(context, padding.bottom)),
+          const ThemeDecor(kind: DecorKind.overlay),
+          Column(
+            children: [
+              Expanded(child: RotatedBox(quarterTurns: 2, child: _panel(context, padding.top))),
+              Divider(height: AppDimens.hairline, color: AppColors.hairline),
+              Expanded(child: _panel(context, padding.bottom)),
+            ],
+          ),
         ],
       ),
     );
@@ -49,7 +56,7 @@ class PauseOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.pause_circle_outline_rounded,
                 size: AppDimens.iconButton,
                 color: AppColors.textMuted,

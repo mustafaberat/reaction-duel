@@ -1,8 +1,8 @@
-# RFC V1 — Reaction Duel
+# RFC V1 — Reaction Rivals
 
 Aynı telefonda iki kişilik refleks düellosu. Backend yok, offline. Flutter, Android / iOS / web.
 
-Kimlik: **Reaction Duel** (TR: **Refleks Düellosu**), ARU SOFT, `com.arusoft.reactionduel`.
+Kimlik: **Reaction Rivals**, ARU SOFT, `com.arusoft.reactionduel`.
 Ortak kurallar: `lib/MOBILE_APP_RULES.md` (10 dil, Settings, How to play, onboarding, safe area, background pause).
 
 ---

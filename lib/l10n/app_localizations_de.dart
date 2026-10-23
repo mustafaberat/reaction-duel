@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'Reaction Duel';
+  String get appTitle => 'Reaction Rivals';
 
   @override
   String get homeTagline => 'Wait for the color. Tap first.';
@@ -102,7 +102,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get penaltyRound => 'Round only';
 
   @override
-  String get setupGuessGuard => 'Anticipation guard';
+  String get setupGuessGuard => 'Guess guard';
 
   @override
   String get setupGuessGuardHint => 'Taps under 80 ms count as a guess.';
@@ -150,7 +150,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get duelGuess => 'GUESS!';
 
   @override
-  String get duelDecoy => 'DECOY!';
+  String get duelDecoy => 'TRAP!';
 
   @override
   String get duelTie => 'Tie';
@@ -235,7 +235,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get endSeries => 'Series';
 
   @override
-  String get endNewRecord => 'New device record';
+  String get endNewRecord => 'New record';
 
   @override
   String get endRematch => 'Rematch';
@@ -312,13 +312,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get howStep3Body => 'When GO! appears, the first tap wins the point.';
 
   @override
-  String get howStep4Title => 'Don\'t jump the gun';
+  String get howStep4Title => 'Don\'t tap early';
 
   @override
   String get howStep4Body => 'Tap too early and the point goes to your rival.';
 
   @override
-  String get howStep5Title => 'Decoy colors';
+  String get howStep5Title => 'Trap colors';
 
   @override
   String get howStep5Body =>

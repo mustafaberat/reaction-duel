@@ -16,6 +16,8 @@ import '../engine/signal_palette.dart';
 import '../game/duel_board.dart';
 import '../game/half_pad.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/decor.dart';
+import '../theme/tap_burst.dart';
 
 enum HowStep { sit, wait, tap, early, decoy }
 
@@ -93,7 +95,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
     };
     final (h1, h2) = match.resolvedHues;
 
-    return Scaffold(
+    return ThemedScaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -171,11 +173,11 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
                     Text(title, textAlign: TextAlign.center, style: theme.displayMedium),
                     const SizedBox(height: AppDimens.gapS),
                     SizedBox(
-                      height: AppType.body * AppType.bodyHeight * 2,
+                      height: 18 * AppType.bodyHeight * 2,
                       child: Text(
                         body,
                         textAlign: TextAlign.center,
-                        style: theme.bodyLarge!.copyWith(color: AppColors.textMuted),
+                        style: theme.bodyLarge!.copyWith(color: AppColors.textMuted, fontSize: 18),
                       ),
                     ),
                     const SizedBox(height: AppDimens.gapM),
@@ -408,6 +410,14 @@ class _Demo extends StatelessWidget {
           shakeTriggers: [shake, 0],
           highlight: highlight,
           labelOverride: labels,
+          frozenBursts: pressed
+              ? [
+                  (
+                    hand,
+                    TapBurstSpec(dx: 0.72, dy: 0.62, progress: 0.4, winning: step == HowStep.tap),
+                  ),
+                ]
+              : const [],
         ),
         _Hand(player: hand, pressed: pressed, t: t, reduceMotion: reduceMotion),
       ],
@@ -464,7 +474,7 @@ class _Hand extends StatelessWidget {
                 Icons.touch_app_rounded,
                 size: size * 0.7,
                 color: AppColors.text,
-                shadows: const [Shadow(color: AppColors.background, blurRadius: 16)],
+                shadows: [Shadow(color: AppColors.background, blurRadius: 16)],
               ),
             ),
           ],

@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../config/tokens.dart';
+import '../theme/button_chrome.dart';
 
 enum AppButtonKind { primary, secondary, ghost }
 
@@ -45,8 +46,11 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final outline = kind == AppButtonKind.ghost
+        ? AppColors.transparent
+        : (kind == AppButtonKind.primary ? AppColors.onAccent.withValues(alpha: 0.2) : AppColors.stroke);
     final (bg, fg, border) = switch (kind) {
-      AppButtonKind.primary => (AppColors.accent, AppColors.onAccent, AppColors.transparent),
+      AppButtonKind.primary => (AppColors.accent, AppColors.onAccent, outline),
       AppButtonKind.secondary => (AppColors.surfaceHigh, AppColors.text, AppColors.stroke),
       AppButtonKind.ghost => (AppColors.transparent, AppColors.textMuted, AppColors.transparent),
     };
@@ -70,31 +74,47 @@ class AppButton extends StatelessWidget {
       ],
     );
 
+    final radius = BorderRadius.circular(AppDimens.buttonRadius);
+    final button = Material(
+      color: bg,
+      elevation: 0,
+      shadowColor: AppColors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(
+          color: border,
+          width: kind == AppButtonKind.ghost ? 0 : AppDimens.buttonOutline,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: height),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: kind == AppButtonKind.ghost ? AppDimens.gapS : AppDimens.gapXl,
+            ),
+            child: Center(child: content),
+          ),
+        ),
+      ),
+    );
+
+    final framed = kind == AppButtonKind.ghost
+        ? SizedBox(height: height, width: expand ? double.infinity : null, child: button)
+        : ThemedButtonFrame(
+            height: height,
+            expand: expand,
+            kindPrimary: kind == AppButtonKind.primary,
+            child: button,
+          );
+
     return Semantics(
       button: true,
       label: label,
       excludeSemantics: true,
-      child: SizedBox(
-        height: height,
-        width: expand ? double.infinity : null,
-        child: Material(
-          color: bg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
-            side: BorderSide(color: border, width: AppDimens.hairline),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onPressed,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: kind == AppButtonKind.ghost ? AppDimens.gapS : AppDimens.gapXl,
-              ),
-              child: content,
-            ),
-          ),
-        ),
-      ),
+      child: framed,
     );
   }
 }
@@ -106,7 +126,7 @@ class AppIconButton extends StatelessWidget {
     required this.tooltip,
     this.size = AppDimens.iconButton,
     this.filled = true,
-    this.color = AppColors.text,
+    this.color,
     super.key,
   });
 
@@ -115,10 +135,11 @@ class AppIconButton extends StatelessWidget {
   final String tooltip;
   final double size;
   final bool filled;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final ink = color ?? AppColors.text;
     return Tooltip(
       message: tooltip,
       child: Semantics(
@@ -138,7 +159,7 @@ class AppIconButton extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onPressed,
-              child: Icon(icon, size: size * 0.48, color: color),
+              child: Icon(icon, size: size * 0.48, color: ink),
             ),
           ),
         ),

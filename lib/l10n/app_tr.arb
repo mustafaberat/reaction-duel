@@ -1,6 +1,6 @@
 {
   "@@locale": "tr",
-  "appTitle": "Refleks Düellosu",
+  "appTitle": "Reaction Rivals",
   "homeTagline": "Rengi bekle. İlk sen bas.",
   "homeRecord": "Rekor {ms} ms",
   "homeMatches": "{count, plural, other{{count} maç}}",
@@ -74,7 +74,7 @@
   "endAverage": "Ortalama",
   "endFouls": "Faul",
   "endSeries": "Seri",
-  "endNewRecord": "Yeni cihaz rekoru",
+  "endNewRecord": "Yeni rekor",
   "endRematch": "Rövanş",
   "endChangeSettings": "Ayarları değiştir",
 

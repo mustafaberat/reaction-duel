@@ -1,4 +1,4 @@
-# Reaction Duel (Refleks Düellosu)
+# Reaction Rivals
 
 Two-player reflex duel on one phone — ARU SOFT, `com.arusoft.reactionduel`. Spec: `rfc.md`; studio rules: `../lib/MOBILE_APP_RULES.md`.
 

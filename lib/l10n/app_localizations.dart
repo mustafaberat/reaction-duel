@@ -117,7 +117,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Reaction Duel'**
+  /// **'Reaction Rivals'**
   String get appTitle;
 
   /// No description provided for @homeTagline.
@@ -273,7 +273,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupGuessGuard.
   ///
   /// In en, this message translates to:
-  /// **'Anticipation guard'**
+  /// **'Guess guard'**
   String get setupGuessGuard;
 
   /// No description provided for @setupGuessGuardHint.
@@ -369,7 +369,7 @@ abstract class AppLocalizations {
   /// No description provided for @duelDecoy.
   ///
   /// In en, this message translates to:
-  /// **'DECOY!'**
+  /// **'TRAP!'**
   String get duelDecoy;
 
   /// No description provided for @duelTie.
@@ -531,7 +531,7 @@ abstract class AppLocalizations {
   /// No description provided for @endNewRecord.
   ///
   /// In en, this message translates to:
-  /// **'New device record'**
+  /// **'New record'**
   String get endNewRecord;
 
   /// No description provided for @endRematch.
@@ -681,7 +681,7 @@ abstract class AppLocalizations {
   /// No description provided for @howStep4Title.
   ///
   /// In en, this message translates to:
-  /// **'Don\'t jump the gun'**
+  /// **'Don\'t tap early'**
   String get howStep4Title;
 
   /// No description provided for @howStep4Body.
@@ -693,7 +693,7 @@ abstract class AppLocalizations {
   /// No description provided for @howStep5Title.
   ///
   /// In en, this message translates to:
-  /// **'Decoy colors'**
+  /// **'Trap colors'**
   String get howStep5Title;
 
   /// No description provided for @howStep5Body.

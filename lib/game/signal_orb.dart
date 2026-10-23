@@ -23,7 +23,7 @@ class SignalOrb extends StatefulWidget {
     this.reduceMotion = false,
     this.pulseTrigger = 0,
     this.pulseUp = false,
-    this.pulseColor = AppColors.text,
+    this.pulseColor,
     super.key,
   });
 
@@ -40,7 +40,7 @@ class SignalOrb extends StatefulWidget {
   /// Changing this runs a 250 ms pulse toward the winner's half.
   final int pulseTrigger;
   final bool pulseUp;
-  final Color pulseColor;
+  final Color? pulseColor;
 
   @override
   State<SignalOrb> createState() => _SignalOrbState();
@@ -100,7 +100,7 @@ class _SignalOrbState extends State<SignalOrb> with TickerProviderStateMixin {
               painter: _PulsePainter(
                 progress: _pulse.value,
                 up: widget.pulseUp,
-                color: widget.pulseColor,
+                color: widget.pulseColor ?? AppColors.text,
               ),
               child: Transform.scale(
                 scale: scale,

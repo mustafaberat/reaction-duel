@@ -16,6 +16,7 @@ import '../engine/duel_engine.dart';
 import '../engine/duel_state.dart';
 import '../l10n/app_localizations.dart';
 import '../services/settings_service.dart';
+import '../theme/tap_burst.dart';
 import 'duel_board.dart';
 import 'match_end_overlay.dart';
 import 'pause_overlay.dart';
@@ -26,6 +27,7 @@ class DuelScreen extends StatefulWidget {
     this.engine,
     this.driveTimers = true,
     this.showCoach,
+    this.frozenBursts = const [],
     super.key,
   });
 
@@ -39,6 +41,9 @@ class DuelScreen extends StatefulWidget {
 
   /// Null = from `onboarding_done`.
   final bool? showCoach;
+
+  /// Capture-tool freeze of tap feedback (player + local 0–1 + progress).
+  final List<(Player, TapBurstSpec)> frozenBursts;
 
   @override
   State<DuelScreen> createState() => _DuelScreenState();
@@ -219,6 +224,7 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
               coach: coach,
               reduceMotion: reduceMotion,
               shakeTriggers: _shakes,
+              frozenBursts: widget.frozenBursts,
               safeTop: padding.top,
               safeBottom: padding.bottom,
               pauseButton: s.phase == DuelPhase.paused || _showEnd

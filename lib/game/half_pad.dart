@@ -9,6 +9,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../config/tokens.dart';
+import '../engine/duel_state.dart';
+import '../theme/celebration.dart';
+import '../theme/characters.dart';
+import '../theme/decor.dart';
+import '../theme/tap_burst.dart';
 import 'score_dots.dart';
 
 enum ResultTone { win, lose, foul, neutral }
@@ -51,6 +56,9 @@ class HalfPad extends StatefulWidget {
     this.edgeInset = 0,
     this.leadingInset = 0,
     this.reduceMotion = false,
+    this.player = Player.p1,
+    this.mood = CharacterMood.waiting,
+    this.frozenBursts = const [],
     this.onPointerDown,
     super.key,
   });
@@ -81,18 +89,30 @@ class HalfPad extends StatefulWidget {
   /// Space reserved at the bar's start (e.g. for the pause button).
   final double leadingInset;
   final bool reduceMotion;
+  final Player player;
+  final CharacterMood mood;
+  final List<TapBurstSpec> frozenBursts;
   final PointerDownEventListener? onPointerDown;
 
   @override
   State<HalfPad> createState() => _HalfPadState();
 }
 
-class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
+class _LiveTap {
+  _LiveTap(this.dx, this.dy, this.controller);
+
+  final double dx;
+  final double dy;
+  final AnimationController controller;
+}
+
+class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
   late final AnimationController _shake = AnimationController(
     vsync: this,
     duration: AppMotion.shake,
     value: 1,
   );
+  final List<_LiveTap> _taps = [];
 
   @override
   void didUpdateWidget(HalfPad old) {
@@ -103,7 +123,35 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     _shake.dispose();
+    for (final t in _taps) {
+      t.controller.dispose();
+    }
     super.dispose();
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    widget.onPointerDown?.call(event);
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+    final local = box.globalToLocal(event.position);
+    final size = box.size;
+    if (size.width <= 0 || size.height <= 0) return;
+    final controller = AnimationController(vsync: this, duration: AppMotion.tapBurst);
+    final tap = _LiveTap(
+      (local.dx / size.width).clamp(0.08, 0.92),
+      (local.dy / size.height).clamp(0.12, 0.82),
+      controller,
+    );
+    _taps.add(tap);
+    controller
+      ..addListener(() {
+        if (mounted) setState(() {});
+      })
+      ..forward().whenComplete(() {
+        controller.dispose();
+        _taps.remove(tap);
+        if (mounted) setState(() {});
+      });
   }
 
   @override
@@ -118,7 +166,7 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
 
     return Listener(
       behavior: HitTestBehavior.opaque,
-      onPointerDown: widget.onPointerDown,
+      onPointerDown: _onPointerDown,
       child: AnimatedBuilder(
         animation: _shake,
         builder: (context, child) {
@@ -138,7 +186,7 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (widget.highlight) const ColoredBox(color: AppColors.hairline),
+                if (widget.highlight) ColoredBox(color: AppColors.hairline),
                 if (tint > 0) ColoredBox(color: AppColors.danger.withValues(alpha: tint)),
                 Transform.translate(offset: Offset(dx, 0), child: child),
               ],
@@ -148,7 +196,22 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Align(alignment: const Alignment(0, -0.15), child: _center(theme, textColor, muted)),
+            if (!onSignal) const ThemeDecor(kind: DecorKind.half),
+            if (onSignal) const SignalCelebrate(),
+            if (widget.result == null)
+              Positioned(
+                right: 4,
+                bottom: AppDimens.halfBarHeight + AppDimens.halfPadding + widget.edgeInset,
+                child: CharacterView(
+                  player: widget.player,
+                  mood: widget.mood,
+                  size: AppDimens.characterHalf,
+                ),
+              ),
+            Align(
+              alignment: widget.result == null ? const Alignment(0, -0.15) : const Alignment(0, 0.12),
+              child: _center(theme, textColor, muted),
+            ),
             Positioned(
               left: AppDimens.halfPadding + widget.leadingInset,
               right: AppDimens.halfPadding,
@@ -165,6 +228,12 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
                   textColor: muted,
                 ),
               ),
+            TapBurstLayer(
+              bursts: [
+                ...widget.frozenBursts,
+                for (final t in _taps) TapBurstSpec(dx: t.dx, dy: t.dy, progress: t.controller.value),
+              ],
+            ),
           ],
         ),
       ),
@@ -186,6 +255,8 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
               fontSize: AppType.idleScore,
               color: textColor.withValues(alpha: AppType.idleScoreAlpha),
               fontFeatures: AppFonts.tabular,
+              shadows: const [],
+              letterSpacing: AppType.tightTracking,
             ),
           ),
         );
@@ -205,9 +276,15 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
       _ => muted,
     };
     final bigColor = r.tone == ResultTone.lose ? muted : textColor;
+    final forceTint = r.tone == ResultTone.foul || widget.signalFill != null;
     // No entry animation: the result is fully visible on its first frame.
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.page),
+      padding: EdgeInsets.fromLTRB(
+        AppDimens.page,
+        0,
+        AppDimens.page,
+        AppDimens.halfBarHeight + widget.edgeInset,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -237,7 +314,7 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
               textAlign: TextAlign.center,
               style: theme.displayMedium!.copyWith(
                 fontSize: AppType.resultLabel,
-                color: labelColor,
+                color: forceTint ? labelColor : null,
               ),
             ),
           if (r.big != null) ...[
@@ -247,7 +324,7 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
               textAlign: TextAlign.center,
               style: theme.displayLarge!.copyWith(
                 fontSize: r.tone == ResultTone.lose ? AppType.resultLabel : AppType.resultMs,
-                color: bigColor,
+                color: forceTint ? bigColor : null,
                 fontFeatures: AppFonts.tabular,
               ),
             ),
@@ -260,6 +337,12 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
               style: theme.bodyLarge!.copyWith(color: muted, fontSize: AppType.resultSub),
             ),
           ],
+          const SizedBox(height: AppDimens.gapM),
+          CharacterView(
+            player: widget.player,
+            mood: widget.mood,
+            size: AppDimens.characterResult,
+          ),
         ],
       ),
     );

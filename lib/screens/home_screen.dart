@@ -1,4 +1,4 @@
-/// Home: title, breathing orb (same component as the duel), Play, Settings, ?.
+/// Home: title, a looping two-player sketch, Play, Settings, ?.
 /// The only screen with a banner (rfc §9).
 library;
 
@@ -9,32 +9,17 @@ import '../app_scope.dart';
 import '../components/app_button.dart';
 import '../config/app_config.dart';
 import '../config/tokens.dart';
-import '../game/signal_orb.dart';
+import '../engine/duel_state.dart';
+import '../game/home_play_loop.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/characters.dart';
+import '../theme/decor.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({this.autoOpenHowTo = true, super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({this.playLoopProgress, super.key});
 
-  /// First launch opens How to Play once (skippable).
-  final bool autoOpenHowTo;
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    if (!widget.autoOpenHowTo) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final settings = AppScope.read(context).settings;
-      if (settings.howToSeen) return;
-      settings.setHowToSeen();
-      Navigator.of(context).pushNamed(AppRoutes.howTo);
-    });
-  }
+  /// Fixes the home sketch at this point (0–1) for captures.
+  final double? playLoopProgress;
 
   @override
   Widget build(BuildContext context) {
@@ -43,34 +28,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context).textTheme;
     final reduceMotion = services.settings.reduceMotionFor(context);
 
-    return Scaffold(
+    return ThemedScaffold(
+      decor: DecorKind.home,
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppDimens.page,
-                AppDimens.gapS,
-                AppDimens.pageTight,
-                0,
-              ),
-              child: Row(
-                children: [
-                  const Spacer(),
-                  AppIconButton(
-                    icon: Icons.question_mark_rounded,
-                    tooltip: l10n.howToPlay,
-                    onPressed: () => Navigator.of(context).pushNamed(AppRoutes.howTo),
-                  ),
-                  const SizedBox(width: AppDimens.gapS),
-                  AppIconButton(
-                    icon: Icons.settings_outlined,
-                    tooltip: l10n.settings,
-                    onPressed: () => Navigator.of(context).pushNamed(AppRoutes.settings),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: Center(
                 child: ConstrainedBox(
@@ -79,20 +41,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: AppDimens.page),
                     child: Column(
                       children: [
-                        const Spacer(flex: 3),
-                        Text(l10n.appTitle, textAlign: TextAlign.center, style: theme.displayLarge),
-                        const SizedBox(height: AppDimens.gapM),
+                        const Spacer(flex: 1),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _OutlinedTitle(l10n.appTitle),
+                        ),
+                        const SizedBox(height: AppDimens.gapS),
+                        Text(
+                          AppIdentity.themeName,
+                          textAlign: TextAlign.center,
+                          style: theme.titleMedium!.copyWith(
+                            color: AppColors.accent,
+                            fontFamily: AppFonts.display,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: AppDimens.gapXs),
                         Text(
                           l10n.homeTagline,
                           textAlign: TextAlign.center,
                           style: theme.bodyLarge!.copyWith(color: AppColors.textMuted),
                         ),
-                        const Spacer(flex: 3),
-                        SignalOrb(
-                          size: AppDimens.orbHome,
-                          reduceMotion: reduceMotion,
+                        const SizedBox(height: AppDimens.gapM),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _HeroRow(),
                         ),
-                        const Spacer(flex: 3),
+                        const Spacer(flex: 1),
+                        Semantics(
+                          label: l10n.homeTagline,
+                          image: true,
+                          excludeSemantics: true,
+                          child: HomePlayLoop(
+                            size: AppDimens.orbHome,
+                            goLabel: l10n.duelGo,
+                            reduceMotion: reduceMotion,
+                            frozenProgress: playLoopProgress,
+                          ),
+                        ),
+                        const Spacer(flex: 1),
                         _StatsLine(),
                         const SizedBox(height: AppDimens.gapL),
                         AppButton(
@@ -100,7 +87,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: Icons.play_arrow_rounded,
                           onPressed: () => Navigator.of(context).pushNamed(AppRoutes.setup),
                         ),
-                        const SizedBox(height: AppDimens.gapXl),
+                        const SizedBox(height: AppDimens.gapM),
+                        AppButton.secondary(
+                          label: l10n.settings,
+                          icon: Icons.settings_outlined,
+                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+                        ),
+                        const SizedBox(height: AppDimens.gapM),
+                        AppButton.secondary(
+                          label: l10n.howToPlay,
+                          icon: Icons.question_mark_rounded,
+                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.howTo),
+                        ),
+                        const SizedBox(height: AppDimens.gapL),
                       ],
                     ),
                   ),
@@ -109,6 +108,85 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const _HomeBanner(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OutlinedTitle extends StatelessWidget {
+  const _OutlinedTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: Theme.of(context).textTheme.displayLarge!.copyWith(
+        fontFamily: AppFonts.display,
+        fontWeight: FontWeight.w800,
+        fontSize: AppType.hero,
+        height: AppType.heroHeight,
+        color: AppColors.displaySkyFill,
+        letterSpacing: AppType.displayTracking,
+        shadows: AppType.displaySkyHalo,
+      ),
+    );
+  }
+}
+
+class _HeroRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CharacterView(
+          player: Player.p1,
+          mood: CharacterMood.ready,
+          size: AppDimens.characterHome,
+          flip: true,
+        ),
+        SizedBox(width: AppDimens.gapS),
+        _VsBadge(),
+        SizedBox(width: AppDimens.gapS),
+        CharacterView(
+          player: Player.p2,
+          mood: CharacterMood.ready,
+          size: AppDimens.characterHome,
+        ),
+      ],
+    );
+  }
+}
+
+class _VsBadge extends StatelessWidget {
+  const _VsBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 54,
+      height: 54,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.outline, width: 3.5),
+        boxShadow: [
+          BoxShadow(color: AppColors.outline.withValues(alpha: 0.28), offset: const Offset(0, 3), blurRadius: 0),
+        ],
+      ),
+      child: Text(
+        'VS',
+        style: Theme.of(context).textTheme.titleLarge!.copyWith(
+          fontFamily: AppFonts.display,
+          fontWeight: FontWeight.w800,
+          fontSize: 18,
+          color: AppColors.onAccent,
+          height: 1,
         ),
       ),
     );

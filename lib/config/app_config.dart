@@ -1,14 +1,16 @@
-/// Reaction Duel — game rules, timing and identity constants.
+/// Reaction Rivals — game rules, timing and identity constants.
 ///
 /// Pure Dart (no Flutter import) so the engine can read it. Visual tokens
 /// live in `tokens.dart`; ad unit ids in `ad_config.dart`.
 library;
 
 abstract final class AppIdentity {
-  static const String appName = 'Reaction Duel';
+  static const String appName = 'Reaction Rivals';
+  static const String themeName = 'Dino Pals';
   static const String developer = 'ARU SOFT';
   static const String packageId = 'com.arusoft.reactionduel';
-  static const String privacyUrl = 'https://arusoft.vercel.app/privacy';
+  static const String privacyUrl =
+      'https://arusoft.vercel.app/privacy/reaction-duel';
 }
 
 abstract final class AppRoutes {
@@ -25,7 +27,6 @@ abstract final class PrefsKeys {
   static const String colorBlind = 'color_blind';
   static const String reduceMotion = 'reduce_motion';
   static const String onboardingDone = 'onboarding_done';
-  static const String howToSeen = 'how_to_seen';
 
   static const String mode = 'match_mode';
   static const String target = 'match_target';
@@ -86,21 +87,23 @@ abstract final class GameRules {
   static const double decoyMinDistance = 0.15;
 }
 
-/// Signal palette as ARGB ints (rfc §4.2). Red is intentionally absent.
+/// Signal palette as ARGB ints. Every chromatic swatch shares one
+/// saturation and brightness (HSV 0.64 / 0.92); only the hue changes.
+/// Red is intentionally absent. White is the neutral at that same brightness.
 abstract final class PaletteArgb {
-  static const int green = 0xFF2ECC71;
-  static const int blue = 0xFF3B82F6;
-  static const int yellow = 0xFFFACC15;
-  static const int orange = 0xFFFB8C3C;
-  static const int pink = 0xFFF472B6;
-  static const int purple = 0xFF9F7AEA;
+  static const int green = 0xFF54EBAC;
+  static const int blue = 0xFF54A0EB;
+  static const int yellow = 0xFFEBE654;
+  static const int orange = 0xFFEB8154;
+  static const int pink = 0xFFEB54AC;
+  static const int purple = 0xFF9354EB;
 
-  // Color-blind safe set (deutan/protan), always paired with shapes.
-  static const int cbBlue = 0xFF2F6BFF;
-  static const int cbYellow = 0xFFFFD60A;
-  static const int cbWhite = 0xFFF2F4F7;
-  static const int cbOrange = 0xFFFF8A00;
-  static const int cbSky = 0xFF5CC8FF;
+  // Color-blind set, same strength as the standard ring, always paired with shapes.
+  static const int cbBlue = blue;
+  static const int cbYellow = yellow;
+  static const int cbWhite = 0xFFEBEBEB;
+  static const int cbOrange = orange;
+  static const int cbSky = 0xFF54EBE1;
 }
 
 /// Interstitial frequency (rfc §9).

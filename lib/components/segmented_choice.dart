@@ -68,22 +68,31 @@ class SegmentedChoice<T> extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          o.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.titleMedium!.copyWith(
-                            fontSize: AppType.bodySmall,
-                            color: o.value == value ? AppColors.text : AppColors.textMuted,
+                        SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            o.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: theme.titleMedium!.copyWith(
+                              fontSize: AppType.bodySmall,
+                              color: o.value == value ? AppColors.text : AppColors.textMuted,
+                            ),
                           ),
                         ),
                         if (o.caption != null)
-                          Text(
-                            o.caption!,
-                            maxLines: 1,
-                            style: theme.bodySmall!.copyWith(
-                              color: o.value == value ? AppColors.textMuted : AppColors.textFaint,
-                              fontFeatures: AppFonts.tabular,
+                          SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              o.caption!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: theme.bodySmall!.copyWith(
+                                color: o.value == value ? AppColors.textMuted : AppColors.textFaint,
+                                fontFeatures: AppFonts.tabular,
+                              ),
                             ),
                           ),
                       ],

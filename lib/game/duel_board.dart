@@ -62,7 +62,9 @@ class DuelBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final settings = state.settings;
-    final signalFill = state.isSignal ? AppColors.signal(state.orbColor!) : null;
+    final signalFill = state.isSignal
+        ? AppColors.signal(state.orbColor!)
+        : null;
     final showTarget = settings.mode == DuelMode.targetColor;
     final target = settings.effectiveTarget;
     final showResult = switch (state.phase) {
@@ -100,7 +102,10 @@ class DuelBoard extends StatelessWidget {
         reduceMotion: reduceMotion,
         player: p,
         mood: moodFor(p, state),
-        frozenBursts: [for (final b in frozenBursts) if (b.$1 == p) b.$2],
+        frozenBursts: [
+          for (final b in frozenBursts)
+            if (b.$1 == p) b.$2,
+        ],
         onPointerDown: onTap == null ? null : (e) => onTap!(p, e),
       );
     }
@@ -115,7 +120,9 @@ class DuelBoard extends StatelessWidget {
           color: signalFill ?? AppColors.background,
           child: Column(
             children: [
-              Expanded(child: RotatedBox(quarterTurns: 2, child: half(Player.p2))),
+              Expanded(
+                child: RotatedBox(quarterTurns: 2, child: half(Player.p2)),
+              ),
               Expanded(child: half(Player.p1)),
             ],
           ),
@@ -125,7 +132,9 @@ class DuelBoard extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(child: _Hairline(visible: signalFill == null)),
-                const SizedBox(width: AppDimens.orbDuel + AppDimens.centerGap * 2),
+                const SizedBox(
+                  width: AppDimens.orbDuel + AppDimens.centerGap * 2,
+                ),
                 Expanded(child: _Hairline(visible: signalFill == null)),
               ],
             ),
@@ -144,15 +153,21 @@ class DuelBoard extends StatelessWidget {
               orb: OrbFrame(
                 size: AppDimens.orbDuel,
                 child: SignalOrb(
-                  fill: state.orbColor == null ? null : AppColors.signal(state.orbColor!),
+                  fill: state.orbColor == null
+                      ? null
+                      : AppColors.signal(state.orbColor!),
                   shape: state.orbShape,
                   calm: true,
                   reduceMotion: reduceMotion,
-                  pulseTrigger: state.phase == DuelPhase.scored || state.phase == DuelPhase.matchOver
+                  pulseTrigger:
+                      state.phase == DuelPhase.scored ||
+                          state.phase == DuelPhase.matchOver
                       ? state.round
                       : 0,
                   pulseUp: pulseUp,
-                  pulseColor: last?.winner == null ? AppColors.text : hues[last!.winner!.index].ink,
+                  pulseColor: last?.winner == null
+                      ? AppColors.text
+                      : hues[last!.winner!.index].ink,
                 ),
               ),
             ),
@@ -222,7 +237,11 @@ class DuelBoard extends StatelessWidget {
           );
         }
         if (r.winner == p) {
-          return HalfResult(label: l10n.duelPlusOne, sub: l10n.duelRivalFoul, tone: ResultTone.win);
+          return HalfResult(
+            label: l10n.duelPlusOne,
+            sub: l10n.duelRivalFoul,
+            tone: ResultTone.win,
+          );
         }
         return HalfResult(sub: l10n.duelRivalFoul);
       case RoundOutcome.tie:
@@ -276,7 +295,9 @@ class _CenterCue extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _slot(RotatedBox(quarterTurns: 2, child: ExcludeSemantics(child: label))),
+        _slot(
+          RotatedBox(quarterTurns: 2, child: ExcludeSemantics(child: label)),
+        ),
         const SizedBox(height: AppDimens.cueGap),
         orb,
         const SizedBox(height: AppDimens.cueGap),
@@ -309,7 +330,10 @@ class _CenterCue extends StatelessWidget {
             Text(
               waitText,
               style: theme.titleMedium!.copyWith(
-                fontFamily: AppFonts.display,
+                fontFamily: AppFonts.displayFor(
+                  Localizations.localeOf(context),
+                ),
+                fontFamilyFallback: AppFonts.fallback,
                 fontWeight: FontWeight.w700,
                 fontSize: AppType.cueWait,
                 letterSpacing: AppType.cueTracking,
@@ -326,13 +350,16 @@ class _CenterCue extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.outline, width: 3.5),
             boxShadow: const [
-              BoxShadow(color: Color(0x66000000), blurRadius: 0, offset: Offset(0, 3)),
+              BoxShadow(
+                color: Color(0x66000000),
+                blurRadius: 0,
+                offset: Offset(0, 3),
+              ),
             ],
           ),
           child: Text(
             goText,
             style: theme.displayLarge!.copyWith(
-              fontFamily: AppFonts.display,
               fontWeight: FontWeight.w800,
               fontSize: AppType.cueGo,
               height: AppType.heroHeight,

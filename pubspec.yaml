@@ -29,31 +29,31 @@ flutter:
   generate: true
 
   fonts:
-    - family: Inter
+    - family: Baloo2
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/Baloo2-Bold.ttf
           weight: 700
-    - family: Sora
-      fonts:
-        - asset: assets/fonts/Sora-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Sora-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Sora-ExtraBold.ttf
+        - asset: assets/fonts/Baloo2-ExtraBold.ttf
           weight: 800
-    - family: LuckiestGuy
+    - family: Nunito
       fonts:
-        - asset: assets/fonts/LuckiestGuy-Regular.ttf
+        - asset: assets/fonts/Nunito-Regular.ttf
           weight: 400
-    - family: LilitaOne
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+    - family: ZenMaruGothic
       fonts:
-        - asset: assets/fonts/LilitaOne-Regular.ttf
+        - asset: assets/fonts/ZenMaruGothic-Bold.ttf
+          weight: 700
+    - family: Jua
+      fonts:
+        - asset: assets/fonts/Jua-Regular.ttf
+          weight: 400
+    - family: ZCOOLKuaiLe
+      fonts:
+        - asset: assets/fonts/ZCOOLKuaiLe-Regular.ttf
           weight: 400
 
 flutter_launcher_icons:

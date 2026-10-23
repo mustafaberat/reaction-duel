@@ -363,7 +363,7 @@ class _TrexPainter {
     );
     PaintKit.highlight(canvas, o + Offset(-s * 0.16, -s * 0.34), s * 0.08, alpha: 0.35);
     _moodBits(canvas, o + Offset(-s * 0.08, -s * 0.22), s, mood, sweatX: 0.22, sweatY: -0.22);
-    if (cheer) _nextTimeCue(canvas, o + Offset(s * 0.22, -s * 0.4), s);
+    if (cheer) _nextTimeCue(canvas, o + Offset(s * 0.4, -s * 0.54), s * 0.88);
     if (crowned) PaintKit.crown(canvas, o + Offset(-s * 0.1, -s * 0.48), s * 0.2);
   }
 }
@@ -494,7 +494,7 @@ class _TriceratopsPainter {
     );
     PaintKit.highlight(canvas, o + Offset(-s * 0.2, -s * 0.16), s * 0.06, alpha: 0.35);
     _moodBits(canvas, o + Offset(-s * 0.16, -s * 0.06), s, mood, sweatX: 0.2, sweatY: -0.28);
-    if (cheer) _nextTimeCue(canvas, o + Offset(s * 0.28, -s * 0.36), s);
+    if (cheer) _nextTimeCue(canvas, o + Offset(s * 0.46, -s * 0.52), s * 0.88);
     if (crowned) PaintKit.crown(canvas, o + Offset(-s * 0.08, -s * 0.48), s * 0.18);
   }
 

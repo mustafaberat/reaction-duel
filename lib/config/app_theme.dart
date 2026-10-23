@@ -7,7 +7,12 @@ import 'package:flutter/services.dart';
 import 'tokens.dart';
 
 abstract final class AppTheme {
-  static ThemeData get current {
+  static ThemeData get current => forLocale(const Locale('en'));
+
+  static ThemeData forLocale(Locale locale) {
+    final displayFamily = AppFonts.displayFor(locale);
+    final bodyFamily = AppFonts.bodyFor(locale);
+
     const colors = ColorScheme(
       brightness: Brightness.light,
       surface: AppColors.background,
@@ -21,7 +26,7 @@ abstract final class AppTheme {
     );
 
     TextStyle body(double size, FontWeight weight, Color color) => TextStyle(
-      fontFamily: AppFonts.body,
+      fontFamily: bodyFamily,
       fontFamilyFallback: AppFonts.fallback,
       fontSize: size,
       fontWeight: weight,
@@ -29,11 +34,11 @@ abstract final class AppTheme {
       height: AppType.bodyHeight,
     );
 
-    /// Display face: dark-brown fill + cream halo so Luckiest Guy stays
-    /// readable on sand / cream. The sky title opts into the yellow sticker.
+    /// Display face: dark-brown fill + cream halo so titles stay readable
+    /// on sand / cream. The sky title opts into the yellow sticker.
     TextStyle display(double size, FontWeight weight, {bool halo = true}) {
       return TextStyle(
-        fontFamily: AppFonts.display,
+        fontFamily: displayFamily,
         fontFamilyFallback: AppFonts.fallback,
         fontSize: size,
         fontWeight: weight,
@@ -58,7 +63,11 @@ abstract final class AppTheme {
         titleLarge: display(AppType.title, FontWeight.w700, halo: false),
         titleMedium: body(AppType.body, FontWeight.w600, AppColors.text),
         bodyLarge: body(AppType.body, FontWeight.w400, AppColors.text),
-        bodyMedium: body(AppType.bodySmall, FontWeight.w400, AppColors.textMuted),
+        bodyMedium: body(
+          AppType.bodySmall,
+          FontWeight.w400,
+          AppColors.textMuted,
+        ),
         bodySmall: body(AppType.caption, FontWeight.w500, AppColors.textMuted),
         labelLarge: body(AppType.button, FontWeight.w600, AppColors.text),
         labelSmall: body(
@@ -69,10 +78,14 @@ abstract final class AppTheme {
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? AppColors.onAccent : AppColors.textMuted,
+          (s) => s.contains(WidgetState.selected)
+              ? AppColors.onAccent
+              : AppColors.textMuted,
         ),
         trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? AppColors.accent : AppColors.surfaceHigh,
+          (s) => s.contains(WidgetState.selected)
+              ? AppColors.accent
+              : AppColors.surfaceHigh,
         ),
         trackOutlineColor: const WidgetStatePropertyAll(AppColors.transparent),
       ),
@@ -88,7 +101,11 @@ abstract final class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceHigh,
-        contentTextStyle: body(AppType.bodySmall, FontWeight.w500, AppColors.text),
+        contentTextStyle: body(
+          AppType.bodySmall,
+          FontWeight.w500,
+          AppColors.text,
+        ),
       ),
       appBarTheme: const AppBarTheme(
         systemOverlayStyle: SystemUiOverlayStyle(

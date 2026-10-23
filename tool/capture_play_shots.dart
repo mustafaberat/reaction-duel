@@ -38,14 +38,7 @@ const Size _featureCanvas = Size(1024, 500);
 const Size _phoneLogical = Size(390, 844);
 const String _outRoot = 'play/gorseller';
 
-const List<String> _fontFallback = [
-  'PingFang SC',
-  'Hiragino Sans GB',
-  'Hiragino Sans',
-  'Apple SD Gothic Neo',
-  'STHeiti',
-  'Apple Color Emoji',
-];
+const List<String> _fontFallback = AppFonts.fallback;
 
 const Map<String, Map<String, String>> _phoneSlogans = {
   'en': {
@@ -204,7 +197,11 @@ void main() {
 }
 
 class _ShotSpec {
-  const _ShotSpec({required this.id, required this.slogan, required this.build});
+  const _ShotSpec({
+    required this.id,
+    required this.slogan,
+    required this.build,
+  });
   final String id;
   final String slogan;
   final Widget Function() build;
@@ -212,7 +209,11 @@ class _ShotSpec {
 
 List<_ShotSpec> _shotBuilders(Map<String, String> slogans, MatchConfig config) {
   return [
-    _ShotSpec(id: '01-home', slogan: slogans['home']!, build: () => const HomeScreen()),
+    _ShotSpec(
+      id: '01-home',
+      slogan: slogans['home']!,
+      build: () => const HomeScreen(),
+    ),
     _ShotSpec(
       id: '02-duel',
       slogan: slogans['duel']!,
@@ -223,7 +224,11 @@ List<_ShotSpec> _shotBuilders(Map<String, String> slogans, MatchConfig config) {
         showCoach: false,
       ),
     ),
-    _ShotSpec(id: '03-setup', slogan: slogans['setup']!, build: () => const MatchSetupScreen()),
+    _ShotSpec(
+      id: '03-setup',
+      slogan: slogans['setup']!,
+      build: () => const MatchSetupScreen(),
+    ),
     _ShotSpec(
       id: '04-howto',
       slogan: slogans['howto']!,
@@ -250,7 +255,11 @@ enum _Scene { signal, matchEnd }
 
 DuelEngine _engineFor(MatchConfig config, _Scene scene) {
   final clock = FakeClock();
-  final engine = DuelEngine(clock: clock, rng: SeededRng(21), settings: config.rules)..start();
+  final engine = DuelEngine(
+    clock: clock,
+    rng: SeededRng(21),
+    settings: config.rules,
+  )..start();
 
   void runTo(DuelPhase phase) {
     for (var i = 0; i < 40 && engine.state.phase != phase; i++) {
@@ -307,26 +316,35 @@ Future<void> _loadFonts() async {
   }
 
   await load('MaterialIcons', ['$dir/MaterialIcons-Regular.otf']);
-  await load('Inter', [
-    'assets/fonts/Inter-Regular.ttf',
-    'assets/fonts/Inter-Medium.ttf',
-    'assets/fonts/Inter-SemiBold.ttf',
-    'assets/fonts/Inter-Bold.ttf',
+  await load('Baloo2', [
+    'assets/fonts/Baloo2-Bold.ttf',
+    'assets/fonts/Baloo2-ExtraBold.ttf',
   ]);
-  await load('Sora', [
-    'assets/fonts/Sora-SemiBold.ttf',
-    'assets/fonts/Sora-Bold.ttf',
-    'assets/fonts/Sora-ExtraBold.ttf',
+  await load('Nunito', [
+    'assets/fonts/Nunito-Regular.ttf',
+    'assets/fonts/Nunito-SemiBold.ttf',
+    'assets/fonts/Nunito-Bold.ttf',
   ]);
+  await load('ZenMaruGothic', ['assets/fonts/ZenMaruGothic-Bold.ttf']);
+  await load('Jua', ['assets/fonts/Jua-Regular.ttf']);
+  await load('ZCOOLKuaiLe', ['assets/fonts/ZCOOLKuaiLe-Regular.ttf']);
 
-  await load('Apple Color Emoji', ['/System/Library/Fonts/Apple Color Emoji.ttc']);
+  await load('Apple Color Emoji', [
+    '/System/Library/Fonts/Apple Color Emoji.ttc',
+  ]);
   await loadIfExists(
     'PingFang SC',
     '/System/Library/PrivateFrameworks/FontServices.framework/Versions/A/Resources/Reserved/PingFangUI.ttc',
   );
-  await loadIfExists('Hiragino Sans GB', '/System/Library/Fonts/Hiragino Sans GB.ttc');
+  await loadIfExists(
+    'Hiragino Sans GB',
+    '/System/Library/Fonts/Hiragino Sans GB.ttc',
+  );
   await loadIfExists('Hiragino Sans', '/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc');
-  await loadIfExists('Apple SD Gothic Neo', '/System/Library/Fonts/AppleSDGothicNeo.ttc');
+  await loadIfExists(
+    'Apple SD Gothic Neo',
+    '/System/Library/Fonts/AppleSDGothicNeo.ttc',
+  );
   await loadIfExists('STHeiti', '/System/Library/Fonts/STHeiti Medium.ttc');
 }
 
@@ -414,7 +432,8 @@ void _setView(WidgetTester tester, Size size) {
 
 Future<Uint8List?> _pngBytes(WidgetTester tester, GlobalKey key) {
   return tester.binding.runAsync(() async {
-    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final boundary =
+        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 1);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     return data!.buffer.asUint8List();
@@ -444,19 +463,29 @@ class _StoreFrame extends StatelessWidget {
           Positioned(
             top: -80,
             right: -60,
-            child: _GlowBlob(color: AppColors.accent.withValues(alpha: 0.28), size: 320),
+            child: _GlowBlob(
+              color: AppColors.accent.withValues(alpha: 0.28),
+              size: 320,
+            ),
           ),
           Positioned(
             bottom: 40,
             left: -80,
-            child: _GlowBlob(color: const Color(0xFFA8D8F0).withValues(alpha: 0.5), size: 280),
+            child: _GlowBlob(
+              color: const Color(0xFFA8D8F0).withValues(alpha: 0.5),
+              size: 280,
+            ),
           ),
           Positioned(
             top: 220,
             left: 40,
             child: Transform.rotate(
               angle: -0.35,
-              child: Icon(Icons.bolt_rounded, size: 72, color: Colors.white.withValues(alpha: 0.4)),
+              child: Icon(
+                Icons.bolt_rounded,
+                size: 72,
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
             ),
           ),
           Positioned(

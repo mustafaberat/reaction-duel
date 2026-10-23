@@ -30,7 +30,8 @@ class HomePlayLoop extends StatefulWidget {
   State<HomePlayLoop> createState() => _HomePlayLoopState();
 }
 
-class _HomePlayLoopState extends State<HomePlayLoop> with SingleTickerProviderStateMixin {
+class _HomePlayLoopState extends State<HomePlayLoop>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _loop = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 5200),
@@ -45,7 +46,8 @@ class _HomePlayLoopState extends State<HomePlayLoop> with SingleTickerProviderSt
   @override
   void didUpdateWidget(HomePlayLoop old) {
     super.didUpdateWidget(old);
-    if (old.reduceMotion != widget.reduceMotion || old.frozenProgress != widget.frozenProgress) {
+    if (old.reduceMotion != widget.reduceMotion ||
+        old.frozenProgress != widget.frozenProgress) {
       _sync();
     }
   }
@@ -163,13 +165,17 @@ class _Board extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: signal ? AppColors.accent : AppColors.orbCore,
-                  border: Border.all(color: AppColors.orbRing, width: AppDimens.orbRingWidth),
+                  border: Border.all(
+                    color: AppColors.orbRing,
+                    width: AppDimens.orbRingWidth,
+                  ),
                 ),
                 child: signal
                     ? Text(
                         goLabel,
                         style: TextStyle(
                           fontFamily: AppFonts.display,
+                          fontFamilyFallback: AppFonts.fallback,
                           fontSize: orb * 0.28,
                           fontWeight: FontWeight.w800,
                           height: 1,
@@ -223,7 +229,11 @@ class _SlowCue extends StatelessWidget {
         angle: 3.1416,
         child: Transform.scale(
           scale: 0.88,
-          child: Icon(Icons.touch_app_rounded, size: icon, color: AppColors.text),
+          child: Icon(
+            Icons.touch_app_rounded,
+            size: icon,
+            color: AppColors.text,
+          ),
         ),
       );
     }
@@ -234,6 +244,7 @@ class _SlowCue extends StatelessWidget {
         _Board._slow,
         style: TextStyle(
           fontFamily: AppFonts.body,
+          fontFamilyFallback: AppFonts.fallback,
           fontSize: timeSize,
           fontWeight: FontWeight.w700,
           height: 1,
@@ -275,13 +286,18 @@ class _FastCue extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (trophy) ...[
-            Icon(Icons.emoji_events_rounded, size: icon * 0.9, color: AppColors.text),
+            Icon(
+              Icons.emoji_events_rounded,
+              size: icon * 0.9,
+              color: AppColors.text,
+            ),
             SizedBox(width: timeSize * 0.25),
           ],
           Text(
             _Board._fast,
             style: TextStyle(
               fontFamily: AppFonts.body,
+              fontFamilyFallback: AppFonts.fallback,
               fontSize: timeSize,
               fontWeight: FontWeight.w700,
               height: 1,

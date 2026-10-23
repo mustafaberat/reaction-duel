@@ -31,83 +31,139 @@ class HomeScreen extends StatelessWidget {
     return ThemedScaffold(
       decor: DecorKind.home,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: AppDimens.maxContentWidth),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final h = constraints.maxHeight;
+            final hero = AppLayout.mascot(h, AppDimens.characterHome);
+            final preview = AppLayout.mascot(h, AppDimens.orbHome);
+            final compact = AppLayout.short(h);
+
+            return Column(
+              children: [
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, inner) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimens.page,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: inner.maxHeight,
+                          ),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxWidth: AppDimens.maxContentWidth,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    height: compact
+                                        ? AppDimens.gapS
+                                        : AppDimens.gapM,
+                                  ),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: _OutlinedTitle(l10n.appTitle),
+                                  ),
+                                  const SizedBox(height: AppDimens.gapS),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppDimens.gapXl,
+                                    ),
+                                    child: Text(
+                                      l10n.homeTagline,
+                                      textAlign: TextAlign.center,
+                                      style: theme.bodyLarge!.copyWith(
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: compact
+                                        ? AppDimens.gapM
+                                        : AppDimens.gapL,
+                                  ),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: _HeroRow(size: hero),
+                                  ),
+                                  SizedBox(
+                                    height: compact
+                                        ? AppDimens.gapM
+                                        : AppDimens.gapL,
+                                  ),
+                                  Semantics(
+                                    label: l10n.homeTagline,
+                                    image: true,
+                                    excludeSemantics: true,
+                                    child: HomePlayLoop(
+                                      size: preview,
+                                      goLabel: l10n.duelGo,
+                                      reduceMotion: reduceMotion,
+                                      frozenProgress: playLoopProgress,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppDimens.gapM),
+                                  const _StatsLine(),
+                                  SizedBox(
+                                    height: compact
+                                        ? AppDimens.gapS
+                                        : AppDimens.gapM,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppDimens.maxContentWidth,
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppDimens.page),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppDimens.page,
+                      0,
+                      AppDimens.page,
+                      AppDimens.gapM,
+                    ),
                     child: Column(
                       children: [
-                        const Spacer(flex: 1),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _OutlinedTitle(l10n.appTitle),
-                        ),
-                        const SizedBox(height: AppDimens.gapS),
-                        Text(
-                          AppIdentity.themeName,
-                          textAlign: TextAlign.center,
-                          style: theme.titleMedium!.copyWith(
-                            color: AppColors.accent,
-                            fontFamily: AppFonts.display,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: AppDimens.gapXs),
-                        Text(
-                          l10n.homeTagline,
-                          textAlign: TextAlign.center,
-                          style: theme.bodyLarge!.copyWith(color: AppColors.textMuted),
-                        ),
-                        const SizedBox(height: AppDimens.gapM),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _HeroRow(),
-                        ),
-                        const Spacer(flex: 1),
-                        Semantics(
-                          label: l10n.homeTagline,
-                          image: true,
-                          excludeSemantics: true,
-                          child: HomePlayLoop(
-                            size: AppDimens.orbHome,
-                            goLabel: l10n.duelGo,
-                            reduceMotion: reduceMotion,
-                            frozenProgress: playLoopProgress,
-                          ),
-                        ),
-                        const Spacer(flex: 1),
-                        _StatsLine(),
-                        const SizedBox(height: AppDimens.gapL),
                         AppButton(
                           label: l10n.play,
                           icon: Icons.play_arrow_rounded,
-                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.setup),
+                          onPressed: () =>
+                              Navigator.of(context).pushNamed(AppRoutes.setup),
                         ),
-                        const SizedBox(height: AppDimens.gapM),
+                        const SizedBox(height: AppDimens.gapS),
                         AppButton.secondary(
                           label: l10n.settings,
                           icon: Icons.settings_outlined,
-                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+                          onPressed: () =>
+                              Navigator.of(context)
+                                  .pushNamed(AppRoutes.settings),
                         ),
-                        const SizedBox(height: AppDimens.gapM),
+                        const SizedBox(height: AppDimens.gapS),
                         AppButton.secondary(
                           label: l10n.howToPlay,
                           icon: Icons.question_mark_rounded,
-                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.howTo),
+                          onPressed: () =>
+                              Navigator.of(context).pushNamed(AppRoutes.howTo),
                         ),
-                        const SizedBox(height: AppDimens.gapL),
                       ],
                     ),
                   ),
                 ),
-              ),
-            ),
-            const _HomeBanner(),
-          ],
+                const _HomeBanner(),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -125,8 +181,6 @@ class _OutlinedTitle extends StatelessWidget {
       text,
       textAlign: TextAlign.center,
       style: Theme.of(context).textTheme.displayLarge!.copyWith(
-        fontFamily: AppFonts.display,
-        fontWeight: FontWeight.w800,
         fontSize: AppType.hero,
         height: AppType.heroHeight,
         color: AppColors.displaySkyFill,
@@ -138,25 +192,25 @@ class _OutlinedTitle extends StatelessWidget {
 }
 
 class _HeroRow extends StatelessWidget {
+  const _HeroRow({required this.size});
+
+  final double size;
+
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         CharacterView(
           player: Player.p1,
           mood: CharacterMood.ready,
-          size: AppDimens.characterHome,
+          size: size,
           flip: true,
         ),
-        SizedBox(width: AppDimens.gapS),
-        _VsBadge(),
-        SizedBox(width: AppDimens.gapS),
-        CharacterView(
-          player: Player.p2,
-          mood: CharacterMood.ready,
-          size: AppDimens.characterHome,
-        ),
+        const SizedBox(width: AppDimens.gapS),
+        const _VsBadge(),
+        const SizedBox(width: AppDimens.gapS),
+        CharacterView(player: Player.p2, mood: CharacterMood.ready, size: size),
       ],
     );
   }
@@ -176,13 +230,16 @@ class _VsBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.outline, width: 3.5),
         boxShadow: [
-          BoxShadow(color: AppColors.outline.withValues(alpha: 0.28), offset: const Offset(0, 3), blurRadius: 0),
+          BoxShadow(
+            color: AppColors.outline.withValues(alpha: 0.28),
+            offset: const Offset(0, 3),
+            blurRadius: 0,
+          ),
         ],
       ),
       child: Text(
         'VS',
         style: Theme.of(context).textTheme.titleLarge!.copyWith(
-          fontFamily: AppFonts.display,
           fontWeight: FontWeight.w800,
           fontSize: 18,
           color: AppColors.onAccent,
@@ -194,6 +251,8 @@ class _VsBadge extends StatelessWidget {
 }
 
 class _StatsLine extends StatelessWidget {
+  const _StatsLine();
+
   @override
   Widget build(BuildContext context) {
     final stats = AppScope.of(context).stats;
@@ -203,7 +262,7 @@ class _StatsLine extends StatelessWidget {
       builder: (context, _) {
         final best = stats.bestMs;
         if (best == null && stats.totalMatches == 0) {
-          return const SizedBox(height: AppDimens.gapL);
+          return const SizedBox.shrink();
         }
         final parts = [
           if (best != null) l10n.homeRecord(best),
@@ -211,7 +270,9 @@ class _StatsLine extends StatelessWidget {
         ];
         return Text(
           parts.join(AppGlyphs.separator),
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontFeatures: AppFonts.tabular),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium!
+              .copyWith(fontFeatures: AppFonts.tabular),
         );
       },
     );

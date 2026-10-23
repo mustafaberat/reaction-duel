@@ -1,7 +1,10 @@
 /// Dino Pals design shots. Real screens, FakeClock + seeded RNG.
 ///
 /// Run: `flutter test tool/capture_kids_themes.dart`
-/// Out: play/design-options/c/*.png — 1080×2340, Turkish locale.
+/// Out:
+///   play/design-options/c/*.png — 375×667 logical @ dpr 2, Turkish
+///   play/design-options/small/*.png — 320×568 home + match end
+///   play/locale-check/{lang}-NN.png — home, how-to, match end per locale
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 library;
 
@@ -32,13 +35,36 @@ import 'package:reaction_duel/services/stats_service.dart';
 import 'package:reaction_duel/theme/tap_burst.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const Size _physical = Size(1080, 2340);
-const double _dpr = 2.75;
-const double _statusBar = 28;
-const double _homeIndicator = 18;
+class _ShotSize {
+  const _ShotSize(this.logical);
+
+  final Size logical;
+  final double dpr = 2;
+  final double statusBar = 20;
+  final double homeIndicator = 0;
+
+  Size get physical => Size(logical.width * dpr, logical.height * dpr);
+}
+
+const _se = _ShotSize(Size(375, 667));
+const _tiny = _ShotSize(Size(320, 568));
 const String _outRoot = 'play/design-options/c';
+const String _outSmall = 'play/design-options/small';
+const String _outLocale = 'play/locale-check';
 
 const List<double> _howToKeyFrames = [0.3, 0.55, 0.52, 0.72, 0.3];
+const List<String> _locales = [
+  'de',
+  'en',
+  'es',
+  'fr',
+  'it',
+  'ja',
+  'ko',
+  'pt',
+  'tr',
+  'zh',
+];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -52,32 +78,38 @@ void main() {
       buildNumber: '1',
       buildSignature: '',
     );
+    SharedPreferences.setMockInitialValues({
+      PrefsKeys.language: 'tr',
+      PrefsKeys.onboardingDone: true,
+      PrefsKeys.bestReactionMs: 187,
+      PrefsKeys.totalMatches: 12,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final settings = SettingsService(prefs);
+    final stats = StatsService(prefs);
+    final services = AppServices(settings: settings, stats: stats);
 
-    await _captureTheme(tester);
-  }, timeout: const Timeout(Duration(minutes: 8)));
+    await settings.setLanguage('tr');
+    await _captureTheme(tester, services);
+    await _captureSmall(tester, services);
+    await _captureLocales(tester, services);
+  }, timeout: const Timeout(Duration(minutes: 16)));
 }
 
-Future<void> _captureTheme(WidgetTester tester) async {
-  SharedPreferences.setMockInitialValues({
-    PrefsKeys.language: 'tr',
-    PrefsKeys.onboardingDone: true,
-    PrefsKeys.bestReactionMs: 187,
-    PrefsKeys.totalMatches: 12,
-  });
-  final prefs = await SharedPreferences.getInstance();
-  final settings = SettingsService(prefs);
-  final stats = StatsService(prefs);
-  final services = AppServices(settings: settings, stats: stats);
+Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
   const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
   final targetConfig = classicConfig.copyWith(
-    rules: const DuelSettings(mode: DuelMode.targetColor, target: SignalColor.blue),
+    rules: const DuelSettings(
+      mode: DuelMode.targetColor,
+      target: SignalColor.blue,
+    ),
   );
 
   Future<void> shot(String name, Widget home) async {
-    await _capture(tester, services, name, home);
+    await _capture(tester, services, '$_outRoot/$name.png', home);
   }
 
-  await settings.setMatch(classicConfig);
+  await services.settings.setMatch(classicConfig);
   await shot('01-home', const HomeScreen(playLoopProgress: 0.84));
   await shot('02-match-setup', const MatchSetupScreen());
   await shot('03-settings', const SettingsScreen());
@@ -85,7 +117,11 @@ Future<void> _captureTheme(WidgetTester tester) async {
   for (var i = 0; i < HowStep.values.length; i++) {
     await shot(
       '04-howto-step${i + 1}',
-      HowToPlayScreen(initialStep: i, includeDecoyStep: true, frozenProgress: _howToKeyFrames[i]),
+      HowToPlayScreen(
+        initialStep: i,
+        includeDecoyStep: true,
+        frozenProgress: _howToKeyFrames[i],
+      ),
     );
   }
 
@@ -98,21 +134,105 @@ Future<void> _captureTheme(WidgetTester tester) async {
   await shot('11-duel-pause', _duel(classicConfig, _Scene.paused));
 
   final endEngine = _engineFor(classicConfig, _Scene.matchEnd);
-  await stats.recordMatch(endEngine.state);
+  await services.stats.recordMatch(endEngine.state);
   await shot(
     '12-match-end',
-    DuelScreen(config: classicConfig, engine: endEngine, driveTimers: false, showCoach: false),
+    DuelScreen(
+      config: classicConfig,
+      engine: endEngine,
+      driveTimers: false,
+      showCoach: false,
+    ),
   );
 
-  await settings.setMatch(targetConfig);
+  await services.settings.setMatch(targetConfig);
   await shot('13-target-setup', const MatchSetupScreen());
   await shot('14-duel-decoy', _duel(targetConfig, _Scene.decoy));
-  await settings.setMatch(classicConfig);
+  await services.settings.setMatch(classicConfig);
   await shot('15-duel-coach', _duel(classicConfig, _Scene.coach, coach: true));
   await shot('16-home-play-loop', const HomeScreen(playLoopProgress: 0.5));
 }
 
-enum _Scene { ready, waiting, signal, midtap, foul, scored, decoy, matchEnd, paused, coach }
+Future<void> _captureSmall(WidgetTester tester, AppServices services) async {
+  await services.settings.setLanguage('tr');
+  const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
+  await services.settings.setMatch(classicConfig);
+
+  await _capture(
+    tester,
+    services,
+    '$_outSmall/01-home.png',
+    const HomeScreen(playLoopProgress: 0.84),
+    size: _tiny,
+  );
+  final endEngine = _engineFor(classicConfig, _Scene.matchEnd);
+  await services.stats.recordMatch(endEngine.state);
+  await _capture(
+    tester,
+    services,
+    '$_outSmall/12-match-end.png',
+    DuelScreen(
+      config: classicConfig,
+      engine: endEngine,
+      driveTimers: false,
+      showCoach: false,
+    ),
+    size: _tiny,
+  );
+}
+
+Future<void> _captureLocales(WidgetTester tester, AppServices services) async {
+  const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
+  await services.settings.setMatch(classicConfig);
+  for (final lang in _locales) {
+    await services.settings.setLanguage(lang);
+    tester.platformDispatcher.localeTestValue = Locale(lang);
+
+    await _capture(
+      tester,
+      services,
+      '$_outLocale/$lang-01.png',
+      const HomeScreen(playLoopProgress: 0.84),
+    );
+    await _capture(
+      tester,
+      services,
+      '$_outLocale/$lang-02.png',
+      const HowToPlayScreen(
+        initialStep: 0,
+        includeDecoyStep: true,
+        frozenProgress: 0.3,
+      ),
+    );
+    final endEngine = _engineFor(classicConfig, _Scene.matchEnd);
+    await services.stats.recordMatch(endEngine.state);
+    await _capture(
+      tester,
+      services,
+      '$_outLocale/$lang-03.png',
+      DuelScreen(
+        config: classicConfig,
+        engine: endEngine,
+        driveTimers: false,
+        showCoach: false,
+      ),
+    );
+  }
+  tester.platformDispatcher.clearLocaleTestValue();
+}
+
+enum _Scene {
+  ready,
+  waiting,
+  signal,
+  midtap,
+  foul,
+  scored,
+  decoy,
+  matchEnd,
+  paused,
+  coach,
+}
 
 Widget _duel(MatchConfig config, _Scene scene, {bool coach = false}) {
   return DuelScreen(
@@ -122,8 +242,14 @@ Widget _duel(MatchConfig config, _Scene scene, {bool coach = false}) {
     showCoach: coach,
     frozenBursts: scene == _Scene.midtap
         ? const [
-            (Player.p1, TapBurstSpec(dx: 0.3, dy: 0.62, progress: 0.38, winning: true)),
-            (Player.p1, TapBurstSpec(dx: 0.58, dy: 0.5, progress: 0.22, winning: true)),
+            (
+              Player.p1,
+              TapBurstSpec(dx: 0.3, dy: 0.62, progress: 0.38, winning: true),
+            ),
+            (
+              Player.p1,
+              TapBurstSpec(dx: 0.58, dy: 0.5, progress: 0.22, winning: true),
+            ),
             (Player.p2, TapBurstSpec(dx: 0.4, dy: 0.6, progress: 0.48)),
           ]
         : const [],
@@ -207,14 +333,15 @@ DuelEngine _engineFor(MatchConfig config, _Scene scene) {
 Future<void> _capture(
   WidgetTester tester,
   AppServices services,
-  String name,
-  Widget home,
-) async {
-  tester.view.physicalSize = _physical;
-  tester.view.devicePixelRatio = _dpr;
-  tester.view.padding = const FakeViewPadding(
-    top: _statusBar * _dpr,
-    bottom: _homeIndicator * _dpr,
+  String path,
+  Widget home, {
+  _ShotSize size = _se,
+}) async {
+  tester.view.physicalSize = size.physical;
+  tester.view.devicePixelRatio = size.dpr;
+  tester.view.padding = FakeViewPadding(
+    top: size.statusBar * size.dpr,
+    bottom: size.homeIndicator * size.dpr,
   );
   tester.view.viewPadding = tester.view.padding;
   addTearDown(tester.view.reset);
@@ -233,22 +360,28 @@ Future<void> _capture(
   await tester.pump(const Duration(milliseconds: 60));
 
   final bytes = await tester.runAsync(() async {
-    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: _dpr);
+    final boundary =
+        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final image = await boundary.toImage(pixelRatio: size.dpr);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     return data!.buffer.asUint8List();
   });
-  final file = File('$_outRoot/$name.png');
+  final file = File(path);
   file.parent.createSync(recursive: true);
   file.writeAsBytesSync(bytes!);
 }
 
 Future<void> _loadFonts() async {
-  Future<ByteData> bytes(String path) async => ByteData.sublistView(await File(path).readAsBytes());
+  Future<ByteData> bytes(String path) async =>
+      ByteData.sublistView(await File(path).readAsBytes());
 
   final root = Platform.environment['FLUTTER_ROOT'];
   final icons = FontLoader('MaterialIcons')
-    ..addFont(bytes('$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'));
+    ..addFont(
+      bytes(
+        '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+      ),
+    );
   await icons.load();
 
   Future<void> family(String name, List<String> files) async {
@@ -259,7 +392,13 @@ Future<void> _loadFonts() async {
     await loader.load();
   }
 
-  await family('Inter', ['Inter-Regular.ttf', 'Inter-Medium.ttf', 'Inter-SemiBold.ttf', 'Inter-Bold.ttf']);
-  await family('LuckiestGuy', ['LuckiestGuy-Regular.ttf']);
-  await family('LilitaOne', ['LilitaOne-Regular.ttf']);
+  await family('Baloo2', ['Baloo2-Bold.ttf', 'Baloo2-ExtraBold.ttf']);
+  await family('Nunito', [
+    'Nunito-Regular.ttf',
+    'Nunito-SemiBold.ttf',
+    'Nunito-Bold.ttf',
+  ]);
+  await family('ZenMaruGothic', ['ZenMaruGothic-Bold.ttf']);
+  await family('Jua', ['Jua-Regular.ttf']);
+  await family('ZCOOLKuaiLe', ['ZCOOLKuaiLe-Regular.ttf']);
 }

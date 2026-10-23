@@ -31,7 +31,12 @@ class PauseOverlay extends StatelessWidget {
           const ThemeDecor(kind: DecorKind.overlay),
           Column(
             children: [
-              Expanded(child: RotatedBox(quarterTurns: 2, child: _panel(context, padding.top))),
+              Expanded(
+                child: RotatedBox(
+                  quarterTurns: 2,
+                  child: _panel(context, padding.top),
+                ),
+              ),
               Divider(height: AppDimens.hairline, color: AppColors.hairline),
               Expanded(child: _panel(context, padding.bottom)),
             ],
@@ -43,56 +48,95 @@ class PauseOverlay extends StatelessWidget {
 
   Widget _panel(BuildContext context, double edgeInset) {
     final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppDimens.page,
-        AppDimens.gapXl,
-        AppDimens.page,
-        AppDimens.gapXl + edgeInset,
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppDimens.endPanelMaxWidth),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.pause_circle_outline_rounded,
-                size: AppDimens.iconButton,
-                color: AppColors.textMuted,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stacked = AppLayout.stackActions(constraints.maxWidth - AppDimens.page * 2);
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppDimens.page,
+            AppDimens.gapM,
+            AppDimens.page,
+            AppDimens.gapM + edgeInset,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppDimens.endPanelMaxWidth,
               ),
-              const SizedBox(height: AppDimens.gapM),
-              Text(l10n.pauseTitle, style: Theme.of(context).textTheme.displayMedium),
-              const SizedBox(height: AppDimens.gapXl),
-              AppButton(
-                label: l10n.pauseResume,
-                icon: Icons.play_arrow_rounded,
-                onPressed: onResume,
-              ),
-              const SizedBox(height: AppDimens.gapM),
-              Row(
+              child: Column(
                 children: [
                   Expanded(
-                    child: AppButton.secondary(
-                      label: l10n.pauseRestart,
-                      height: AppDimens.buttonHeightSmall + AppDimens.gapXs,
-                      onPressed: onRestart,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.pause_circle_outline_rounded,
+                            size: AppDimens.iconButton,
+                            color: AppColors.textMuted,
+                          ),
+                          const SizedBox(height: AppDimens.gapM),
+                          Text(
+                            l10n.pauseTitle,
+                            style: Theme.of(context).textTheme.displayMedium,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: AppDimens.gapM),
-                  Expanded(
-                    child: AppButton.secondary(
-                      label: l10n.home,
-                      height: AppDimens.buttonHeightSmall + AppDimens.gapXs,
-                      onPressed: onHome,
-                    ),
+                  AppButton(
+                    label: l10n.pauseResume,
+                    icon: Icons.play_arrow_rounded,
+                    onPressed: onResume,
                   ),
+                  const SizedBox(height: AppDimens.gapS),
+                  if (stacked)
+                    Column(
+                      children: [
+                        AppButton.secondary(
+                          label: l10n.pauseRestart,
+                          icon: Icons.replay_rounded,
+                          height: AppDimens.buttonHeightSmall,
+                          onPressed: onRestart,
+                        ),
+                        const SizedBox(height: AppDimens.gapS),
+                        AppButton.secondary(
+                          label: l10n.home,
+                          icon: Icons.home_outlined,
+                          height: AppDimens.buttonHeightSmall,
+                          onPressed: onHome,
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton.secondary(
+                            label: l10n.pauseRestart,
+                            icon: Icons.replay_rounded,
+                            height: AppDimens.buttonHeightSmall,
+                            onPressed: onRestart,
+                          ),
+                        ),
+                        const SizedBox(width: AppDimens.gapS),
+                        Expanded(
+                          child: AppButton.secondary(
+                            label: l10n.home,
+                            icon: Icons.home_outlined,
+                            height: AppDimens.buttonHeightSmall,
+                            onPressed: onHome,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -16,6 +16,8 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.expand = true,
     this.height = AppDimens.buttonHeight,
+    this.maxLines = 1,
+    this.compact = false,
     super.key,
   });
 
@@ -25,6 +27,8 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.expand = true,
     this.height = AppDimens.buttonHeight,
+    this.maxLines = 1,
+    this.compact = false,
     super.key,
   }) : kind = AppButtonKind.secondary;
 
@@ -34,6 +38,8 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.expand = false,
     this.height = AppDimens.buttonHeightSmall,
+    this.maxLines = 1,
+    this.compact = false,
     super.key,
   }) : kind = AppButtonKind.ghost;
 
@@ -43,33 +49,66 @@ class AppButton extends StatelessWidget {
   final IconData? icon;
   final bool expand;
   final double height;
+  final int maxLines;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final outline = kind == AppButtonKind.ghost
         ? AppColors.transparent
-        : (kind == AppButtonKind.primary ? AppColors.onAccent.withValues(alpha: 0.2) : AppColors.stroke);
+        : (kind == AppButtonKind.primary
+              ? AppColors.onAccent.withValues(alpha: 0.2)
+              : AppColors.outline);
     final (bg, fg, border) = switch (kind) {
       AppButtonKind.primary => (AppColors.accent, AppColors.onAccent, outline),
-      AppButtonKind.secondary => (AppColors.surfaceHigh, AppColors.text, AppColors.stroke),
-      AppButtonKind.ghost => (AppColors.transparent, AppColors.textMuted, AppColors.transparent),
+      AppButtonKind.secondary => (AppColors.surface, AppColors.text, outline),
+      AppButtonKind.ghost => (
+        AppColors.transparent,
+        AppColors.textMuted,
+        AppColors.transparent,
+      ),
     };
     final style = Theme.of(context).textTheme.labelLarge!.copyWith(
       color: fg,
-      fontWeight: kind == AppButtonKind.primary ? FontWeight.w700 : FontWeight.w600,
+      fontSize: compact ? AppType.caption : AppType.button,
+      height: compact ? 1.15 : null,
+      fontWeight: kind == AppButtonKind.primary
+          ? FontWeight.w700
+          : FontWeight.w600,
       letterSpacing: AppType.buttonTracking,
     );
+    final lines = compact ? 2 : maxLines;
 
     final content = Row(
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: AppDimens.icon, color: fg),
-          const SizedBox(width: AppDimens.gapS),
+          Icon(
+            icon,
+            size: compact ? AppDimens.iconSmall : AppDimens.icon,
+            color: fg,
+          ),
+          SizedBox(width: compact ? AppDimens.gapXs : AppDimens.gapS),
         ],
         Flexible(
-          child: Text(label, style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
+          child: compact
+              ? FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    style: style,
+                    maxLines: lines,
+                    textAlign: TextAlign.center,
+                    softWrap: true,
+                  ),
+                )
+              : Text(
+                  label,
+                  style: style,
+                  maxLines: lines,
+                  overflow: TextOverflow.ellipsis,
+                ),
         ),
       ],
     );
@@ -93,7 +132,11 @@ class AppButton extends StatelessWidget {
           constraints: BoxConstraints(minHeight: height),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: kind == AppButtonKind.ghost ? AppDimens.gapS : AppDimens.gapXl,
+              horizontal: kind == AppButtonKind.ghost
+                  ? AppDimens.gapS
+                  : compact
+                  ? AppDimens.gapM
+                  : AppDimens.gapXl,
             ),
             child: Center(child: content),
           ),
@@ -102,13 +145,12 @@ class AppButton extends StatelessWidget {
     );
 
     final framed = kind == AppButtonKind.ghost
-        ? SizedBox(height: height, width: expand ? double.infinity : null, child: button)
-        : ThemedButtonFrame(
+        ? SizedBox(
             height: height,
-            expand: expand,
-            kindPrimary: kind == AppButtonKind.primary,
+            width: expand ? double.infinity : null,
             child: button,
-          );
+          )
+        : ThemedButtonFrame(height: height, expand: expand, child: button);
 
     return Semantics(
       button: true,

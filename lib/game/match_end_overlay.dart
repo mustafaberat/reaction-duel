@@ -85,149 +85,273 @@ class _EndPanel extends StatelessWidget {
     final loser = winner.other;
     final winnerHue = overlay.hues[winner.index];
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppDimens.page,
-        AppDimens.gapM,
-        AppDimens.page,
-        AppDimens.gapM + edgeInset,
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppDimens.endPanelMaxWidth),
-          child: Column(
-            children: [
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: SizedBox(
-                    width: AppDimens.endPanelMaxWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          height: AppDimens.characterEndWin + 28,
-                          width: AppDimens.endPanelMaxWidth,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.bottomCenter,
-                            children: [
-                              const Positioned.fill(child: ConfettiBurst()),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  CharacterView(
-                                    player: winner,
-                                    mood: CharacterMood.happy,
-                                    size: AppDimens.characterEndWin,
-                                    crowned: true,
-                                  ),
-                                  const SizedBox(width: AppDimens.gapL),
-                                  CharacterView(
-                                    player: loser,
-                                    mood: CharacterMood.nextTime,
-                                    size: AppDimens.characterEndLose,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: AppDimens.gapS),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: AppDimens.dot,
-                              height: AppDimens.dot,
-                              decoration: BoxDecoration(color: winnerHue.ink, shape: BoxShape.circle),
-                            ),
-                            const SizedBox(width: AppDimens.gapS),
-                            Flexible(
-                              child: Text(
-                                l10n.endWinner(overlay.names[winner.index]),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.displayMedium!.copyWith(fontSize: AppType.endName),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimens.gapXs),
-                        Text(
-                          '${s.scoreOf(winner)}${AppGlyphs.scoreDash}${s.scoreOf(loser)}',
-                          style: theme.displayLarge!.copyWith(
-                            fontSize: AppType.endScore,
-                            fontFeatures: AppFonts.tabular,
-                          ),
-                        ),
-                        if (overlay.newRecord) ...[
-                          const SizedBox(height: AppDimens.gapS),
-                          _Badge(text: l10n.endNewRecord),
-                        ],
-                        const SizedBox(height: AppDimens.gapM),
-                        _StatsTable(overlay: overlay),
-                      ],
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tight = constraints.maxWidth < 400 || constraints.maxHeight < 340;
+        final padH = tight ? AppDimens.pageTight : AppDimens.page;
+        final rematchH = tight
+            ? AppDimens.buttonHeightSmall
+            : AppDimens.buttonHeight;
+        final winSize = AppLayout.endWinSize(constraints.maxHeight);
+        final loseSize = AppLayout.endLoseSize(winSize);
+        final nameSize = tight ? 18.0 : AppType.endName;
+        final scoreSize = tight ? 28.0 : AppType.endScore;
+        final bodySize = tight ? 12.0 : AppType.bodySmall;
+        final topPad = winSize * 0.18;
+        final dinoGap = tight ? AppDimens.gapL : AppDimens.gapXl;
+
+        Widget dinoSlot({required Widget child, double endPad = 0}) {
+          return Padding(
+            padding: EdgeInsets.only(top: topPad, right: endPad),
+            child: child,
+          );
+        }
+
+        Widget dinos() => Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            const Positioned.fill(child: ConfettiBurst()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                dinoSlot(
+                  child: CharacterView(
+                    player: winner,
+                    mood: CharacterMood.happy,
+                    size: winSize,
+                    crowned: true,
                   ),
                 ),
+                SizedBox(width: dinoGap),
+                dinoSlot(
+                  endPad: loseSize * 0.22,
+                  child: CharacterView(
+                    player: loser,
+                    mood: CharacterMood.nextTime,
+                    size: loseSize,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+
+        Widget winnerLine() => Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: AppDimens.dot,
+              height: AppDimens.dot,
+              decoration: BoxDecoration(
+                color: winnerHue.ink,
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: AppDimens.gapM),
-              AppButton(
-                label: l10n.endRematch,
-                icon: Icons.replay_rounded,
-                onPressed: overlay.onRematch,
+            ),
+            const SizedBox(width: AppDimens.gapS),
+            Flexible(
+              child: Text(
+                l10n.endWinner(overlay.names[winner.index]),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.displayMedium!.copyWith(fontSize: nameSize),
               ),
-              const SizedBox(height: AppDimens.gapS),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            ),
+          ],
+        );
+
+        Widget score() => Text(
+          '${s.scoreOf(winner)}${AppGlyphs.scoreDash}${s.scoreOf(loser)}',
+          style: theme.displayLarge!.copyWith(
+            fontSize: scoreSize,
+            fontFeatures: AppFonts.tabular,
+          ),
+        );
+
+        Widget stats() => _StatsTable(overlay: overlay, bodySize: bodySize);
+
+        final headline = tight
+            ? Row(
+                children: [
+                  Expanded(child: winnerLine()),
+                  const SizedBox(width: AppDimens.gapS),
+                  score(),
+                ],
+              )
+            : Column(
+                children: [
+                  winnerLine(),
+                  const SizedBox(height: AppDimens.gapXs),
+                  score(),
+                ],
+              );
+
+        final body = <Widget>[
+          dinos(),
+          SizedBox(height: tight ? AppDimens.gapXs : AppDimens.gapS),
+          headline,
+          if (overlay.newRecord) ...[
+            const SizedBox(height: AppDimens.gapXs),
+            _Badge(text: l10n.endNewRecord),
+          ],
+          SizedBox(height: tight ? AppDimens.gapXs : AppDimens.gapS),
+          stats(),
+        ];
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            padH,
+            tight ? AppDimens.gapXs : AppDimens.gapM,
+            padH,
+            AppDimens.gapXs + edgeInset,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppDimens.endPanelMaxWidth,
+              ),
+              child: Column(
                 children: [
                   Expanded(
-                    child: AppButton.ghost(
-                      label: l10n.endChangeSettings,
-                      expand: true,
-                      onPressed: overlay.onChangeSettings,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: body,
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: AppButton.ghost(
-                      label: l10n.home,
-                      expand: true,
-                      onPressed: overlay.onHome,
-                    ),
+                  SizedBox(height: tight ? AppDimens.gapXs : AppDimens.gapS),
+                  AppButton(
+                    label: l10n.endRematch,
+                    icon: Icons.replay_rounded,
+                    height: rematchH,
+                    onPressed: overlay.onRematch,
+                  ),
+                  SizedBox(height: tight ? AppDimens.gapXs : AppDimens.gapS),
+                  _EndSecondaryActions(
+                    changeLabel: l10n.endChangeSettings,
+                    homeLabel: l10n.home,
+                    onChangeSettings: overlay.onChangeSettings,
+                    onHome: overlay.onHome,
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
+    );
+  }
+}
+
+class _EndSecondaryActions extends StatelessWidget {
+  const _EndSecondaryActions({
+    required this.changeLabel,
+    required this.homeLabel,
+    required this.onChangeSettings,
+    required this.onHome,
+  });
+
+  final String changeLabel;
+  final String homeLabel;
+  final VoidCallback onChangeSettings;
+  final VoidCallback onHome;
+
+  bool _wordTooWide(BuildContext context, String label, double textWidth) {
+    final style = Theme.of(context).textTheme.labelLarge!.copyWith(
+      fontSize: AppType.caption,
+      fontWeight: FontWeight.w600,
+    );
+    for (final word in label.split(RegExp(r'\s+'))) {
+      final painter = TextPainter(
+        text: TextSpan(text: word, style: style),
+        maxLines: 1,
+        textDirection: Directionality.of(context),
+      )..layout();
+      if (painter.width > textWidth * 1.2) return true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    AppButton compact(String label, IconData icon, VoidCallback onPressed) {
+      return AppButton.secondary(
+        label: label,
+        icon: icon,
+        expand: true,
+        compact: true,
+        height: AppDimens.buttonHeightSmall,
+        onPressed: onPressed,
+      );
+    }
+
+    final change = compact(
+      changeLabel,
+      Icons.tune_rounded,
+      onChangeSettings,
+    );
+    final home = compact(homeLabel, Icons.home_outlined, onHome);
+
+    return LayoutBuilder(
+      builder: (context, c) {
+        final chrome =
+            AppDimens.gapM * 2 + AppDimens.iconSmall + AppDimens.gapXs;
+        final textWidth = (c.maxWidth - AppDimens.gapS) / 2 - chrome;
+        final stack =
+            AppLayout.stackEndActions(c.maxWidth) ||
+            textWidth < 48 ||
+            _wordTooWide(context, changeLabel, textWidth) ||
+            _wordTooWide(context, homeLabel, textWidth);
+        if (stack) {
+          return Column(
+            children: [
+              change,
+              const SizedBox(height: AppDimens.gapS),
+              home,
+            ],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: change),
+            const SizedBox(width: AppDimens.gapS),
+            Expanded(child: home),
+          ],
+        );
+      },
     );
   }
 }
 
 class _StatsTable extends StatelessWidget {
-  const _StatsTable({required this.overlay});
+  const _StatsTable({required this.overlay, required this.bodySize});
 
   final MatchEndOverlay overlay;
+  final double bodySize;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context).textTheme;
     final s = overlay.state;
+    final compact = bodySize <= 13;
     String ms(int? v) => v == null ? l10n.duelNoTime : l10n.duelMs(v);
 
     TableRow row(String label, String a, String b, {bool header = false}) {
-      final style = header
-          ? theme.bodySmall!
-          : theme.titleMedium!.copyWith(
-              fontSize: AppType.bodySmall,
-              fontFeatures: AppFonts.tabular,
-            );
-      Widget cell(String text, {TextAlign align = TextAlign.right, Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppDimens.gapXs + 1),
+      final style = (header ? theme.bodySmall! : theme.titleMedium!).copyWith(
+        fontSize: bodySize,
+        height: 1.1,
+        fontFeatures: header ? null : AppFonts.tabular,
+      );
+      Widget cell(
+        String text, {
+        TextAlign align = TextAlign.right,
+        Color? color,
+      }) => Padding(
+        padding: EdgeInsets.symmetric(vertical: compact ? 1 : 3),
         child: Text(
           text,
           textAlign: align,
@@ -248,7 +372,10 @@ class _StatsTable extends StatelessWidget {
     final p1 = s.statsOf(Player.p1);
     final p2 = s.statsOf(Player.p2);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.gapL, vertical: AppDimens.gapS),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? AppDimens.gapS : AppDimens.gapL,
+        vertical: compact ? 2 : AppDimens.gapS,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimens.chipRadius),
@@ -256,9 +383,9 @@ class _StatsTable extends StatelessWidget {
       ),
       child: Table(
         columnWidths: const {
-          0: FlexColumnWidth(),
-          1: FixedColumnWidth(AppDimens.statsColumn),
-          2: FixedColumnWidth(AppDimens.statsColumn),
+          0: FlexColumnWidth(1.2),
+          1: FlexColumnWidth(),
+          2: FlexColumnWidth(),
         },
         children: [
           row('', overlay.names[0], overlay.names[1], header: true),
@@ -280,7 +407,10 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.gapM, vertical: AppDimens.gapXs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.gapM,
+        vertical: AppDimens.gapXs,
+      ),
       decoration: BoxDecoration(
         color: AppColors.accent.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(AppDimens.chipRadius),
@@ -288,11 +418,16 @@ class _Badge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bolt_rounded, size: AppDimens.iconSmall, color: AppColors.accent),
+          Icon(
+            Icons.bolt_rounded,
+            size: AppDimens.iconSmall,
+            color: AppColors.accent,
+          ),
           const SizedBox(width: AppDimens.gapXs),
           Text(
             text,
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.accent),
+            style: Theme.of(context).textTheme.bodySmall!
+                .copyWith(color: AppColors.accent),
           ),
         ],
       ),

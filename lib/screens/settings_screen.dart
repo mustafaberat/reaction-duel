@@ -84,7 +84,14 @@ class SettingsScreen extends StatelessWidget {
                                       color: AppColors.textMuted,
                                     ),
                                     const SizedBox(width: AppDimens.gapM),
-                                    Text(l10n.settingsReduceMotion, style: theme.titleMedium),
+                                    Expanded(
+                                      child: Text(
+                                        l10n.settingsReduceMotion,
+                                        style: theme.titleMedium,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: AppDimens.gapM),

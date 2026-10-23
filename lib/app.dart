@@ -38,8 +38,17 @@ class ReactionDuelApp extends StatelessWidget {
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         localeResolutionCallback: _resolveLocale,
-        builder: (context, child) =>
-            AppScope(services: services, child: child ?? const SizedBox.shrink()),
+        builder: (context, child) {
+          final locale =
+              Localizations.maybeLocaleOf(context) ?? const Locale('en');
+          return Theme(
+            data: AppTheme.forLocale(locale),
+            child: AppScope(
+              services: services,
+              child: child ?? const SizedBox.shrink(),
+            ),
+          );
+        },
         home: home ?? const HomeScreen(),
         routes: {
           AppRoutes.setup: (_) => const MatchSetupScreen(),

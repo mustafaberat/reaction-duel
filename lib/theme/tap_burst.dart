@@ -59,43 +59,69 @@ class TapBurstPainter extends CustomPainter {
 
   void _stomp(Canvas canvas, Offset c, double t, bool winning) {
     final scale = _pop(t) * (winning ? 1.32 : 1);
-    final opacity = ((winning ? 1 : 0.78) * (1 - Curves.easeIn.transform(t))).clamp(0.0, 1.0);
+    final opacity = ((winning ? 1 : 0.78) * (1 - Curves.easeIn.transform(t)))
+        .clamp(0.0, 1.0);
     canvas.save();
     canvas.translate(c.dx, c.dy);
     canvas.scale(scale);
-    PaintKit.dinoFoot(canvas, Offset.zero, 64, const Color(0xFF5A3A18), opacity: opacity);
+    PaintKit.dinoFoot(
+      canvas,
+      Offset.zero,
+      64,
+      const Color(0xFF5A3A18),
+      opacity: opacity,
+    );
     for (var i = 0; i < 8; i++) {
       final a = math.pi * 0.12 + i * math.pi * 0.12;
       final d = 24 + t * 20;
       canvas.drawCircle(
         Offset(math.cos(a) * d * (i.isEven ? 1 : -1), 14 + math.sin(a) * 8),
         6 + t * 5,
-        PaintKit.fill(const Color(0xFFC8A06A).withValues(alpha: opacity * 0.75)),
+        PaintKit.fill(
+          const Color(0xFFC8A06A).withValues(alpha: opacity * 0.75),
+        ),
       );
     }
     canvas.restore();
 
     final bubble = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset.zero, width: 68 + (winning ? 10 : 0), height: 34),
+      Rect.fromCenter(
+        center: Offset.zero,
+        width: 68 + (winning ? 10 : 0),
+        height: 34,
+      ),
       const Radius.circular(14),
     );
     canvas.save();
     canvas.translate(c.dx + 22, c.dy - 52 - t * 10);
     canvas.rotate(-0.18);
-    canvas.drawRRect(bubble, PaintKit.fill(const Color(0xFFFFF8DC).withValues(alpha: opacity)));
-    canvas.drawRRect(bubble, PaintKit.stroke(AppColors.outline.withValues(alpha: opacity), 3.2));
+    canvas.drawRRect(
+      bubble,
+      PaintKit.fill(const Color(0xFFFFF8DC).withValues(alpha: opacity)),
+    );
+    canvas.drawRRect(
+      bubble,
+      PaintKit.stroke(AppColors.outline.withValues(alpha: opacity), 3.2),
+    );
     final tail = Path()
       ..moveTo(-8, 14)
       ..lineTo(-2, 28)
       ..lineTo(10, 14)
       ..close();
-    canvas.drawPath(tail, PaintKit.fill(const Color(0xFFFFF8DC).withValues(alpha: opacity)));
-    canvas.drawPath(tail, PaintKit.stroke(AppColors.outline.withValues(alpha: opacity), 3.2));
+    canvas.drawPath(
+      tail,
+      PaintKit.fill(const Color(0xFFFFF8DC).withValues(alpha: opacity)),
+    );
+    canvas.drawPath(
+      tail,
+      PaintKit.stroke(AppColors.outline.withValues(alpha: opacity), 3.2),
+    );
     final tp = TextPainter(
       text: TextSpan(
         text: 'POW!',
         style: TextStyle(
           fontFamily: AppFonts.display,
+          fontFamilyFallback: AppFonts.fallback,
           fontSize: 20 + (winning ? 6 : 0),
           fontWeight: FontWeight.w800,
           color: AppColors.outline.withValues(alpha: opacity),

@@ -136,7 +136,10 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
     final local = box.globalToLocal(event.position);
     final size = box.size;
     if (size.width <= 0 || size.height <= 0) return;
-    final controller = AnimationController(vsync: this, duration: AppMotion.tapBurst);
+    final controller = AnimationController(
+      vsync: this,
+      duration: AppMotion.tapBurst,
+    );
     final tap = _LiveTap(
       (local.dx / size.width).clamp(0.08, 0.92),
       (local.dy / size.height).clamp(0.12, 0.82),
@@ -167,75 +170,96 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
     return Listener(
       behavior: HitTestBehavior.opaque,
       onPointerDown: _onPointerDown,
-      child: AnimatedBuilder(
-        animation: _shake,
-        builder: (context, child) {
-          final t = _shake.value;
-          final active = t < 1;
-          final decay = (1 - t) * (1 - t);
-          final dx = active && !widget.reduceMotion
-              ? math.sin(t * math.pi * 2 * AppMotion.shakeOscillations) *
-                    AppDimens.shakeAmplitude *
-                    decay
-              : 0.0;
-          final flash = active ? AppColors.foulFlashAlpha * (1 - t) : 0.0;
-          final hold = fouled ? AppColors.foulHoldAlpha : 0.0;
-          final tint = math.max(flash, hold);
-          return ColoredBox(
-            color: bg,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final charSize = (box.maxHeight * 0.42).clamp(
+            72.0,
+            AppDimens.characterHalf,
+          );
+          return AnimatedBuilder(
+            animation: _shake,
+            builder: (context, child) {
+              final t = _shake.value;
+              final active = t < 1;
+              final decay = (1 - t) * (1 - t);
+              final dx = active && !widget.reduceMotion
+                  ? math.sin(t * math.pi * 2 * AppMotion.shakeOscillations) *
+                        AppDimens.shakeAmplitude *
+                        decay
+                  : 0.0;
+              final flash = active ? AppColors.foulFlashAlpha * (1 - t) : 0.0;
+              final hold = fouled ? AppColors.foulHoldAlpha : 0.0;
+              final tint = math.max(flash, hold);
+              return ColoredBox(
+                color: bg,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (widget.highlight) ColoredBox(color: AppColors.hairline),
+                    if (tint > 0)
+                      ColoredBox(
+                        color: AppColors.danger.withValues(alpha: tint),
+                      ),
+                    Transform.translate(offset: Offset(dx, 0), child: child),
+                  ],
+                ),
+              );
+            },
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (widget.highlight) ColoredBox(color: AppColors.hairline),
-                if (tint > 0) ColoredBox(color: AppColors.danger.withValues(alpha: tint)),
-                Transform.translate(offset: Offset(dx, 0), child: child),
+                if (!onSignal) const ThemeDecor(kind: DecorKind.half),
+                if (onSignal) const SignalCelebrate(),
+                if (widget.result == null)
+                  Positioned(
+                    right: 4,
+                    bottom:
+                        AppDimens.halfBarHeight +
+                        AppDimens.halfPadding +
+                        widget.edgeInset,
+                    child: CharacterView(
+                      player: widget.player,
+                      mood: widget.mood,
+                      size: charSize,
+                    ),
+                  ),
+                Align(
+                  alignment: widget.result == null
+                      ? const Alignment(0, -0.15)
+                      : const Alignment(0, 0.12),
+                  child: _center(theme, textColor, muted),
+                ),
+                Positioned(
+                  left: AppDimens.halfPadding + widget.leadingInset,
+                  right: AppDimens.halfPadding,
+                  bottom: AppDimens.halfPadding + widget.edgeInset,
+                  child: _bar(theme, ink, textColor, muted),
+                ),
+                if (widget.target != null)
+                  Positioned(
+                    left: AppDimens.halfPadding,
+                    top: AppDimens.halfPadding,
+                    child: _TargetChip(
+                      label: widget.targetLabel ?? '',
+                      color: widget.target!,
+                      textColor: muted,
+                    ),
+                  ),
+                TapBurstLayer(
+                  bursts: [
+                    ...widget.frozenBursts,
+                    for (final t in _taps)
+                      TapBurstSpec(
+                        dx: t.dx,
+                        dy: t.dy,
+                        progress: t.controller.value,
+                      ),
+                  ],
+                ),
               ],
             ),
           );
         },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (!onSignal) const ThemeDecor(kind: DecorKind.half),
-            if (onSignal) const SignalCelebrate(),
-            if (widget.result == null)
-              Positioned(
-                right: 4,
-                bottom: AppDimens.halfBarHeight + AppDimens.halfPadding + widget.edgeInset,
-                child: CharacterView(
-                  player: widget.player,
-                  mood: widget.mood,
-                  size: AppDimens.characterHalf,
-                ),
-              ),
-            Align(
-              alignment: widget.result == null ? const Alignment(0, -0.15) : const Alignment(0, 0.12),
-              child: _center(theme, textColor, muted),
-            ),
-            Positioned(
-              left: AppDimens.halfPadding + widget.leadingInset,
-              right: AppDimens.halfPadding,
-              bottom: AppDimens.halfPadding + widget.edgeInset,
-              child: _bar(theme, ink, textColor, muted),
-            ),
-            if (widget.target != null)
-              Positioned(
-                left: AppDimens.halfPadding,
-                top: AppDimens.halfPadding,
-                child: _TargetChip(
-                  label: widget.targetLabel ?? '',
-                  color: widget.target!,
-                  textColor: muted,
-                ),
-              ),
-            TapBurstLayer(
-              bursts: [
-                ...widget.frozenBursts,
-                for (final t in _taps) TapBurstSpec(dx: t.dx, dy: t.dy, progress: t.controller.value),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -250,7 +274,7 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
           child: Text(
             '${widget.score}',
             style: theme.displayLarge!.copyWith(
-              fontFamily: AppFonts.body,
+              fontFamily: AppFonts.bodyFor(Localizations.localeOf(context)),
               fontWeight: FontWeight.w700,
               fontSize: AppType.idleScore,
               color: textColor.withValues(alpha: AppType.idleScoreAlpha),
@@ -271,8 +295,10 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
       );
     }
     final labelColor = switch (r.tone) {
-      ResultTone.foul => widget.signalFill != null ? AppColors.onSignal : AppColors.danger,
-      ResultTone.win => widget.signalFill != null ? AppColors.onSignal : widget.hue.ink,
+      ResultTone.foul =>
+        widget.signalFill != null ? AppColors.onSignal : AppColors.danger,
+      ResultTone.win =>
+        widget.signalFill != null ? AppColors.onSignal : widget.hue.ink,
       _ => muted,
     };
     final bigColor = r.tone == ResultTone.lose ? muted : textColor;
@@ -285,65 +311,80 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
         AppDimens.page,
         AppDimens.halfBarHeight + widget.edgeInset,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (r.icon != null) ...[
-            Container(
-              width: AppDimens.foulIcon,
-              height: AppDimens.foulIcon,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: labelColor, width: AppDimens.foulIconStroke),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (r.icon != null) ...[
+              Container(
+                width: AppDimens.foulIcon,
+                height: AppDimens.foulIcon,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: labelColor,
+                    width: AppDimens.foulIconStroke,
+                  ),
+                ),
+                child: Icon(
+                  r.icon,
+                  color: labelColor,
+                  size: AppDimens.foulIcon * 0.62,
+                ),
               ),
-              child: Icon(r.icon, color: labelColor, size: AppDimens.foulIcon * 0.62),
-            ),
-            const SizedBox(height: AppDimens.gapS),
-          ],
-          if (r.badge != null) ...[
-            _Badge(
-              text: r.badge!,
-              filled: r.tone == ResultTone.win,
-              color: r.tone == ResultTone.win ? widget.hue.ink : muted,
-            ),
-            const SizedBox(height: AppDimens.gapS),
-          ],
-          if (r.label != null)
-            Text(
-              r.label!,
-              textAlign: TextAlign.center,
-              style: theme.displayMedium!.copyWith(
-                fontSize: AppType.resultLabel,
-                color: forceTint ? labelColor : null,
+              const SizedBox(height: AppDimens.gapS),
+            ],
+            if (r.badge != null) ...[
+              _Badge(
+                text: r.badge!,
+                filled: r.tone == ResultTone.win,
+                color: r.tone == ResultTone.win ? widget.hue.ink : muted,
               ),
-            ),
-          if (r.big != null) ...[
-            if (r.label != null) const SizedBox(height: AppDimens.gapXs),
-            Text(
-              r.big!,
-              textAlign: TextAlign.center,
-              style: theme.displayLarge!.copyWith(
-                fontSize: r.tone == ResultTone.lose ? AppType.resultLabel : AppType.resultMs,
-                color: forceTint ? bigColor : null,
-                fontFeatures: AppFonts.tabular,
+              const SizedBox(height: AppDimens.gapS),
+            ],
+            if (r.label != null)
+              Text(
+                r.label!,
+                textAlign: TextAlign.center,
+                style: theme.displayMedium!.copyWith(
+                  fontSize: AppType.resultLabel,
+                  color: forceTint ? labelColor : null,
+                ),
               ),
+            if (r.big != null) ...[
+              if (r.label != null) const SizedBox(height: AppDimens.gapXs),
+              Text(
+                r.big!,
+                textAlign: TextAlign.center,
+                style: theme.displayLarge!.copyWith(
+                  fontSize: r.tone == ResultTone.lose
+                      ? AppType.resultLabel
+                      : AppType.resultMs,
+                  color: forceTint ? bigColor : null,
+                  fontFeatures: AppFonts.tabular,
+                ),
+              ),
+            ],
+            if (r.sub != null) ...[
+              const SizedBox(height: AppDimens.gapS),
+              Text(
+                r.sub!,
+                textAlign: TextAlign.center,
+                style: theme.bodyLarge!.copyWith(
+                  color: muted,
+                  fontSize: AppType.resultSub,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppDimens.gapM),
+            CharacterView(
+              player: widget.player,
+              mood: widget.mood,
+              size: AppDimens.characterResult,
             ),
           ],
-          if (r.sub != null) ...[
-            const SizedBox(height: AppDimens.gapS),
-            Text(
-              r.sub!,
-              textAlign: TextAlign.center,
-              style: theme.bodyLarge!.copyWith(color: muted, fontSize: AppType.resultSub),
-            ),
-          ],
-          const SizedBox(height: AppDimens.gapM),
-          CharacterView(
-            player: widget.player,
-            mood: widget.mood,
-            size: AppDimens.characterResult,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -397,11 +438,16 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
     );
   }
 
-  Color onSignalAware(Color muted) => widget.signalFill != null ? muted : AppColors.textFaint;
+  Color onSignalAware(Color muted) =>
+      widget.signalFill != null ? muted : AppColors.textFaint;
 }
 
 class _TargetChip extends StatelessWidget {
-  const _TargetChip({required this.label, required this.color, required this.textColor});
+  const _TargetChip({
+    required this.label,
+    required this.color,
+    required this.textColor,
+  });
 
   final String label;
   final Color color;
@@ -412,7 +458,11 @@ class _TargetChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: textColor)),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall!
+              .copyWith(color: textColor),
+        ),
         const SizedBox(width: AppDimens.gapS),
         Container(
           width: AppDimens.targetDot,
@@ -421,12 +471,18 @@ class _TargetChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.hairline, width: AppDimens.hairline),
+            border: Border.all(
+              color: AppColors.hairline,
+              width: AppDimens.hairline,
+            ),
           ),
           child: Container(
             width: AppDimens.targetDot * AppDimens.orbShapeFactor * 1.4,
             height: AppDimens.targetDot * AppDimens.orbShapeFactor * 1.4,
-            decoration: const BoxDecoration(color: AppColors.onSignal, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: AppColors.onSignal,
+              shape: BoxShape.circle,
+            ),
           ),
         ),
       ],

@@ -8,7 +8,15 @@ import 'package:flutter/material.dart';
 
 import '../engine/signal_palette.dart';
 
-enum CharacterMood { waiting, ready, pouncing, happy, oops, surprised, nextTime }
+enum CharacterMood {
+  waiting,
+  ready,
+  pouncing,
+  happy,
+  oops,
+  surprised,
+  nextTime,
+}
 
 class PlayerSwatch {
   const PlayerSwatch(this.ink, this.tint);
@@ -91,21 +99,56 @@ enum PlayerHue {
 }
 
 abstract final class AppFonts {
-  static const String display = 'LuckiestGuy';
-  static const String body = 'LilitaOne';
+  static const String display = 'Baloo2';
+  static const String body = 'Nunito';
+  static const String ja = 'ZenMaruGothic';
+  static const String ko = 'Jua';
+  static const String zh = 'ZCOOLKuaiLe';
 
-  /// Platform fallbacks for CJK / Hangul native language names.
-  static const List<String> fallback = [
-    'Inter',
-    'PingFang SC',
-    'Hiragino Sans',
-    'Apple SD Gothic Neo',
-    'Noto Sans CJK SC',
-    'Noto Sans CJK JP',
-    'Noto Sans CJK KR',
-  ];
+  /// Bundled fallbacks only — no system faces, so missing glyphs stay in-theme.
+  static const List<String> fallback = [display, body, ja, ko, zh];
+
+  static String displayFor(Locale locale) => switch (locale.languageCode) {
+    'ja' => ja,
+    'ko' => ko,
+    'zh' => zh,
+    _ => display,
+  };
+
+  static String bodyFor(Locale locale) => switch (locale.languageCode) {
+    'ja' => ja,
+    'ko' => ko,
+    'zh' => zh,
+    _ => body,
+  };
 
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
+}
+
+abstract final class AppLayout {
+  static bool short(double height) => height < 640;
+  static bool tiny(double height) => height < 580;
+  static bool stackActions(double width) => width < 360;
+
+  /// Match-end secondary pair: side-by-side unless the half is extremely narrow.
+  static bool stackEndActions(double width) => width < 236;
+
+  static double mascot(double height, double full) {
+    if (height >= 700) return full;
+    if (height >= 640) return full * 0.86;
+    if (height >= 580) return full * 0.74;
+    return full * 0.62;
+  }
+
+  /// Winner dino on the match-end half. Drops to ~80 on short phones.
+  static double endWinSize(double halfHeight) {
+    if (halfHeight >= 420) return 120;
+    if (halfHeight >= 360) return 100;
+    return 80;
+  }
+
+  static double endLoseSize(double winSize) =>
+      (winSize * 0.88).clamp(70.0, 108.0);
 }
 
 abstract final class AppType {
@@ -177,7 +220,7 @@ abstract final class AppDimens {
   static const double gapXxl = 32;
 
   static const double buttonHeight = 56;
-  static const double buttonHeightSmall = 44;
+  static const double buttonHeightSmall = 48;
   static const double buttonRadius = 16;
   static const double cardRadius = 18;
   static const double chipRadius = 12;
@@ -232,13 +275,13 @@ abstract final class AppDimens {
   static const double demoHand = 44;
 
   static const double endPanelMaxWidth = 360;
-  static const double statsColumn = 88;
+  static const double statsColumn = 64;
 
   static const double characterHalf = 128;
   static const double characterHome = 138;
   static const double characterResult = 120;
-  static const double characterEndWin = 132;
-  static const double characterEndLose = 120;
+  static const double characterEndWin = 120;
+  static const double characterEndLose = 108;
 }
 
 /// Language-neutral glyphs used to join localized pieces.

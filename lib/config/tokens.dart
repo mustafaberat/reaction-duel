@@ -321,6 +321,9 @@ abstract final class AppMotion {
   static const Duration demoPress = Duration(milliseconds: 140);
 
   static const Duration tapBurst = Duration(milliseconds: 900);
+
+  /// Each startup step in bootstrap() waits at most this long.
+  static const Duration startupStepTimeout = Duration(seconds: 5);
 }
 
 abstract final class AppShadows {

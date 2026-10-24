@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_scope.dart';
 import 'config/app_config.dart';
@@ -72,7 +73,6 @@ class ReactionDuelApp extends StatelessWidget {
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: AppColors.transparent,
@@ -82,12 +82,44 @@ Future<void> bootstrap() async {
     ),
   );
 
-  final settings = await SettingsService.create();
-  final stats = StatsService(settings.prefs);
-  final ads = AdService.instance..initialize(firstSession: stats.firstSession);
+  // No startup failure or hang may block runApp — otherwise the app sits on
+  // the splash screen forever. On error it opens with default settings.
+  await _guarded('orientation', () {
+    return SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  });
+
+  SettingsService? settings;
+  await _guarded('settings.create', () async {
+    settings = await SettingsService.create();
+  });
+  settings ??= await _inMemorySettings();
+
+  final stats = StatsService(settings!.prefs);
+  final ads = AdService.instance;
+  try {
+    ads.initialize(firstSession: stats.firstSession);
+  } catch (error, stack) {
+    debugPrint('startup ads.initialize failed: $error\n$stack');
+  }
   runApp(
     ReactionDuelApp(
-      services: AppServices(settings: settings, stats: stats, ads: ads),
+      services: AppServices(settings: settings!, stats: stats, ads: ads),
     ),
   );
+}
+
+Future<void> _guarded(String label, Future<void> Function() step) async {
+  try {
+    await step().timeout(AppMotion.startupStepTimeout);
+  } catch (error, stack) {
+    debugPrint('startup $label failed: $error\n$stack');
+  }
+}
+
+/// Fallback when the platform prefs store is unavailable: an in-memory store
+/// so the app still opens (nothing persists for this session).
+Future<SettingsService> _inMemorySettings() async {
+  // ignore: invalid_use_of_visible_for_testing_member
+  SharedPreferences.setMockInitialValues(<String, Object>{});
+  return SettingsService(await SharedPreferences.getInstance());
 }

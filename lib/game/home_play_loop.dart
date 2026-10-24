@@ -142,7 +142,8 @@ class _Board extends StatelessWidget {
   Widget build(BuildContext context) {
     final phase = _phase;
     final live = phase != _Phase.wait;
-    final pressed = phase == _Phase.press;
+    final glow = phase == _Phase.go;
+    final pressed = phase == _Phase.press || phase == _Phase.result;
     final won = phase == _Phase.result;
     final stamp = phase == _Phase.press || phase == _Phase.result;
     final orb = (height - 14).clamp(56.0, 132.0);
@@ -180,25 +181,19 @@ class _Board extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _Side(
-                            color: DinoPalette.trex.body,
-                            child: _TimeChip(
-                              text: won ? fastTime : HomePlayLoop.pendingTime,
-                              gold: won,
-                              faded: !won,
-                            ),
+                        _Side(
+                          color: DinoPalette.trex.body,
+                          child: _TimeChip(
+                            text: won ? fastTime : HomePlayLoop.pendingTime,
+                            gold: won,
+                            faded: !won,
                           ),
                         ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _Side(
-                            color: DinoPalette.tri.body,
-                            child: _TimeChip(
-                              text: won ? slowTime : HomePlayLoop.pendingTime,
-                              faded: !won,
-                            ),
+                        _Side(
+                          color: DinoPalette.tri.body,
+                          child: _TimeChip(
+                            text: won ? slowTime : HomePlayLoop.pendingTime,
+                            faded: !won,
                           ),
                         ),
                       ],
@@ -208,6 +203,7 @@ class _Board extends StatelessWidget {
                     size: orb,
                     live: live,
                     pressed: pressed,
+                    glow: glow,
                     label: live ? goLabel : waitLabel,
                   ),
                 ],
@@ -258,6 +254,7 @@ class _Side extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
@@ -287,46 +284,49 @@ class _TimeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Opacity(
       opacity: faded ? 0.55 : 1,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: gold ? const Color(0xFFFFC93C) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.outline, width: 3),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x4D3A280C),
-              offset: Offset(0, 3),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(9, 1, 9, 1),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (gold) ...[
-                const SizedBox(
-                  width: 16,
-                  height: 14,
-                  child: CustomPaint(painter: ChipCrownPainter()),
-                ),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                text,
-                maxLines: 1,
-                style: const TextStyle(
-                  fontFamily: AppFonts.body,
-                  fontFamilyFallback: AppFonts.fallback,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                  height: 1.15,
-                  color: AppColors.text,
-                  fontFeatures: AppFonts.tabular,
-                ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 3),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: gold ? const Color(0xFFFFC93C) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.outline, width: 3),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x4D3A280C),
+                offset: Offset(0, 3),
+                blurRadius: 0,
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(9, 1, 9, 1),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (gold) ...[
+                  const SizedBox(
+                    width: 16,
+                    height: 14,
+                    child: CustomPaint(painter: ChipCrownPainter()),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  text,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontFamily: AppFonts.display,
+                    fontFamilyFallback: AppFonts.fallback,
+                    fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  height: 1.5,
+                    color: AppColors.text,
+                    fontFeatures: AppFonts.tabular,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -339,12 +339,14 @@ class _Orb extends StatelessWidget {
     required this.size,
     required this.live,
     required this.pressed,
+    required this.glow,
     required this.label,
   });
 
   final double size;
   final bool live;
   final bool pressed;
+  final bool glow;
   final String label;
 
   @override
@@ -355,6 +357,7 @@ class _Orb extends StatelessWidget {
     final printSize = size * 0.42;
 
     return Transform.scale(
+      key: const ValueKey<String>('home-orb'),
       scale: pressed ? 0.94 : 1,
       child: Container(
         width: size,
@@ -369,7 +372,7 @@ class _Orb extends StatelessWidget {
               offset: Offset(0, 5),
               blurRadius: 0,
             ),
-            if (live && !pressed)
+            if (glow)
               BoxShadow(
                 color: const Color(0xFF3D9E45).withValues(alpha: 0.25),
                 spreadRadius: 8,

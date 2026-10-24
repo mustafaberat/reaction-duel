@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:reaction_duel/app.dart';
 import 'package:reaction_duel/app_scope.dart';
 import 'package:reaction_duel/config/app_config.dart';
+import 'package:reaction_duel/components/app_button.dart';
 import 'package:reaction_duel/game/home_play_loop.dart';
 import 'package:reaction_duel/screens/home_screen.dart';
 import 'package:reaction_duel/services/settings_service.dart';
@@ -50,6 +51,13 @@ Future<void> _pumpLoop(
   await tester.pump();
 }
 
+double _orbScale(WidgetTester tester) {
+  final transform = tester.widget<Transform>(
+    find.byKey(const ValueKey<String>('home-orb')),
+  );
+  return transform.transform.storage[0];
+}
+
 Future<AppServices> _services({String language = 'tr'}) async {
   SharedPreferences.setMockInitialValues({
     PrefsKeys.language: language,
@@ -88,6 +96,7 @@ void main() {
     expect(find.text('361 ms'), findsNothing);
     expect(find.text('214 ms'), findsNothing);
     expect(find.text(HomePlayLoop.pendingTime), findsNWidgets(2));
+    expect(_orbScale(tester), 1);
   });
 
   testWidgets('press frame keeps pending chips', (tester) async {
@@ -96,6 +105,7 @@ void main() {
     expect(find.text('214 ms'), findsNothing);
     expect(find.text('361 ms'), findsNothing);
     expect(find.text(HomePlayLoop.pendingTime), findsNWidgets(2));
+    expect(_orbScale(tester), closeTo(0.94, 0.001));
   });
 
   testWidgets('result frame shows both times', (tester) async {
@@ -103,6 +113,7 @@ void main() {
     expect(find.text('GO!'), findsOneWidget);
     expect(find.text('361 ms'), findsOneWidget);
     expect(find.text('214 ms'), findsOneWidget);
+    expect(_orbScale(tester), closeTo(0.94, 0.001));
   });
 
   testWidgets('reduce motion freezes on the result frame', (tester) async {
@@ -195,6 +206,10 @@ void main() {
     final howTo = tester.getCenter(find.text('Nasıl oynanır'));
     expect(settings.dy, closeTo(howTo.dy, 6));
     expect(settings.dx, lessThan(howTo.dx));
+    final settingsBtn = tester.widget<AppButton>(
+      find.widgetWithText(AppButton, 'Ayarlar'),
+    );
+    expect(settingsBtn.icon, Icons.settings_rounded);
     expect(tester.takeException(), isNull);
   });
 }

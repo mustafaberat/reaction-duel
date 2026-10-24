@@ -54,9 +54,26 @@ class DecorPainter extends CustomPainter {
 
   final DecorKind kind;
 
+  static const Color _homeSky = Color(0xFFA6E0F5);
+  static const Color _homeMid = Color(0xFFE4F3EA);
+  static const Color _homeSand = Color(0xFFFCEBB6);
+
   @override
   void paint(Canvas canvas, Size size) {
     if (kind == DecorKind.card) return;
+    if (kind == DecorKind.home) {
+      canvas.drawRect(
+        Offset.zero & size,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [_homeSky, _homeMid, _homeSand],
+            stops: [0.0, 0.34, 0.62],
+          ).createShader(Offset.zero & size),
+      );
+      return;
+    }
     canvas.drawRect(
       Offset.zero & size,
       Paint()
@@ -71,9 +88,8 @@ class DecorPainter extends CustomPainter {
         ).createShader(Offset.zero & size),
     );
     if (kind == DecorKind.half) return;
-    final home = kind == DecorKind.home;
-    final groundY = home ? size.height * 0.97 : size.height * 0.94;
-    final dip = home ? 8.0 : 10.0;
+    final groundY = size.height * 0.94;
+    const dip = 10.0;
     final ground = Path()
       ..moveTo(0, groundY)
       ..quadraticBezierTo(
@@ -84,7 +100,7 @@ class DecorPainter extends CustomPainter {
       )
       ..quadraticBezierTo(
         size.width * 0.8,
-        size.height * (home ? 0.92 : 0.97),
+        size.height * 0.97,
         size.width,
         groundY - 4,
       )
@@ -95,26 +111,6 @@ class DecorPainter extends CustomPainter {
     canvas.drawPath(
       ground,
       PaintKit.stroke(AppColors.outline.withValues(alpha: 0.28), 2),
-    );
-    if (home) {
-      _sun(canvas, Offset(size.width - 22, 30), 12);
-    }
-  }
-
-  void _sun(Canvas canvas, Offset c, double r) {
-    PaintKit.rays(
-      canvas,
-      c,
-      r * 1.55,
-      count: 8,
-      color: const Color(0x33FFE566),
-    );
-    PaintKit.circle(canvas, c, r, color: const Color(0xFFFFE566), width: 1.8);
-    PaintKit.highlight(
-      canvas,
-      c + Offset(-r * 0.28, -r * 0.28),
-      r * 0.28,
-      alpha: 0.4,
     );
   }
 

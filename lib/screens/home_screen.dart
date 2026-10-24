@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen>
                             Expanded(
                               child: AppButton.secondary(
                                 label: l10n.settings,
-                                icon: Icons.settings_outlined,
+                                icon: Icons.settings_rounded,
                                 height: sideH,
                                 fontSize: sideFont,
                                 compact: true,
@@ -228,8 +228,6 @@ class _StoneSign extends StatelessWidget {
   final bool openMouth;
   final bool compact;
 
-  static const Color _slab = Color(0xFFC9C0AE);
-  static const Color _shade = Color(0xFFADA390);
   static const Color _carved = Color(0xFF4A3C28);
 
   @override
@@ -272,87 +270,54 @@ class _StoneSign extends StatelessWidget {
               Positioned(
                 left: 0,
                 right: 0,
+                bottom: -_StoneSlabPainter.shadowH,
+                height: height + _StoneSlabPainter.shadowH,
+                child: CustomPaint(painter: const _StoneSlabPainter()),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
                 bottom: 0,
                 height: height,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: _slab,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(26),
-                      topRight: Radius.circular(30),
-                      bottomRight: Radius.circular(24),
-                      bottomLeft: Radius.circular(32),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                    border: Border.all(color: AppColors.outline, width: 4),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x593A280C),
-                        offset: Offset(0, 5),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(22),
-                      topRight: Radius.circular(26),
-                      bottomRight: Radius.circular(20),
-                      bottomLeft: Radius.circular(28),
-                    ),
-                    child: Stack(
-                      children: [
-                        const Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          height: 8,
-                          child: ColoredBox(color: _shade),
-                        ),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: sw * 0.72,
-                                ),
-                                child: Text(
-                                  title,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  style: TextStyle(
-                                    fontFamily: AppFonts.body,
-                                    fontFamilyFallback: const [
-                                      AppFonts.body,
-                                      AppFonts.ja,
-                                      AppFonts.ko,
-                                      AppFonts.zh,
-                                    ],
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: compact ? 36 : 44,
-                                    height: 0.95,
-                                    color: _carved,
-                                    shadows: const [
-                                      Shadow(
-                                        color: Color(0xFFE8E1D2),
-                                        offset: Offset(0, 2),
-                                      ),
-                                      Shadow(
-                                        color: Color(0xFF8C826E),
-                                        offset: Offset(0, -1),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: sw * 0.72),
+                        child: Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: TextStyle(
+                            fontFamily: AppFonts.body,
+                            fontFamilyFallback: const [
+                              AppFonts.body,
+                              AppFonts.ja,
+                              AppFonts.ko,
+                              AppFonts.zh,
+                            ],
+                            fontWeight: FontWeight.w800,
+                            fontSize: compact ? 36 : 44,
+                            height: 0.95,
+                            color: _carved,
+                            shadows: const [
+                              Shadow(
+                                color: Color(0xFFE8E1D2),
+                                offset: Offset(0, 2),
                               ),
-                            ),
+                              Shadow(
+                                color: Color(0xFF8C826E),
+                                offset: Offset(0, -1),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -391,6 +356,55 @@ class _StoneSign extends StatelessWidget {
       },
     );
   }
+}
+
+/// Stone plaque: inset #ADA390 band clipped to the inner rounded rect, then a
+/// solid (0, 5) drop shadow. Flutter's 0-blur BoxShadow leaves a gap/line.
+class _StoneSlabPainter extends CustomPainter {
+  const _StoneSlabPainter();
+
+  static const double shadowH = 5;
+  static const double shadeH = 8;
+  static const double borderW = 4;
+  static const Color _slab = Color(0xFFC9C0AE);
+  static const Color _shade = Color(0xFFADA390);
+  static const Color _shadow = Color(0x593A280C);
+
+  static const BorderRadius _radius = BorderRadius.only(
+    topLeft: Radius.circular(26),
+    topRight: Radius.circular(30),
+    bottomRight: Radius.circular(24),
+    bottomLeft: Radius.circular(32),
+  );
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final slab = Rect.fromLTWH(0, 0, size.width, size.height - shadowH);
+    final outer = _radius.toRRect(slab);
+    canvas.drawRRect(
+      outer.shift(const Offset(0, shadowH)),
+      Paint()..color = _shadow,
+    );
+    canvas.drawRRect(outer, Paint()..color = _slab);
+    final inner = outer.deflate(borderW);
+    canvas.save();
+    canvas.clipRRect(inner);
+    canvas.drawRect(
+      Rect.fromLTWH(inner.left, inner.bottom - shadeH, inner.width, shadeH),
+      Paint()..color = _shade,
+    );
+    canvas.restore();
+    canvas.drawRRect(
+      outer.deflate(borderW / 2),
+      Paint()
+        ..color = AppColors.outline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderW,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _Hand extends StatelessWidget {

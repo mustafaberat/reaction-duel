@@ -9,9 +9,17 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../config/tokens.dart';
+import '../engine/duel_state.dart';
+import '../theme/celebration.dart';
+import '../theme/dino_art.dart';
+import '../theme/decor.dart';
+import '../theme/tap_burst.dart';
 import 'score_dots.dart';
 
 enum ResultTone { win, lose, foul, neutral }
+
+/// Whether this pointer-down should splash, hold the stamp, or be ignored.
+enum PadTapAck { ignore, burst, hold }
 
 /// What the half shows in its center after a round. Every outcome carries
 /// text (and fouls an ✕ icon), never color alone.
@@ -51,6 +59,10 @@ class HalfPad extends StatefulWidget {
     this.edgeInset = 0,
     this.leadingInset = 0,
     this.reduceMotion = false,
+    this.player = Player.p1,
+    this.mood = CharacterMood.waiting,
+    this.frozenBursts = const [],
+    this.tapLocked = false,
     this.onPointerDown,
     super.key,
   });
@@ -81,35 +93,101 @@ class HalfPad extends StatefulWidget {
   /// Space reserved at the bar's start (e.g. for the pause button).
   final double leadingInset;
   final bool reduceMotion;
-  final PointerDownEventListener? onPointerDown;
+  final Player player;
+  final CharacterMood mood;
+  final List<TapBurstSpec> frozenBursts;
+
+  /// Engine lock: this player already used their tap this round.
+  final bool tapLocked;
+  final PadTapAck Function(PointerDownEvent event)? onPointerDown;
 
   @override
   State<HalfPad> createState() => _HalfPadState();
 }
 
-class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
+class _LiveTap {
+  _LiveTap(this.dx, this.dy, this.controller);
+
+  final double dx;
+  final double dy;
+  final AnimationController controller;
+}
+
+class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
   late final AnimationController _shake = AnimationController(
     vsync: this,
     duration: AppMotion.shake,
     value: 1,
   );
+  final List<_LiveTap> _taps = [];
+  final List<TapBurstSpec> _held = [];
 
   @override
   void didUpdateWidget(HalfPad old) {
     super.didUpdateWidget(old);
     if (widget.shakeTrigger > old.shakeTrigger) _shake.forward(from: 0);
+    if (widget.player != old.player ||
+        (!widget.tapLocked && _held.isNotEmpty)) {
+      _held.clear();
+    }
   }
 
   @override
   void dispose() {
     _shake.dispose();
+    for (final t in _taps) {
+      t.controller.dispose();
+    }
     super.dispose();
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (widget.tapLocked) return;
+    final ack = widget.onPointerDown?.call(event) ?? PadTapAck.burst;
+    if (ack == PadTapAck.ignore) return;
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+    final local = box.globalToLocal(event.position);
+    final size = box.size;
+    if (size.width <= 0 || size.height <= 0) return;
+    final dx = (local.dx / size.width).clamp(0.08, 0.92);
+    final dy = (local.dy / size.height).clamp(0.12, 0.82);
+    if (ack == PadTapAck.hold) {
+      setState(() {
+        _held.add(
+          TapBurstSpec(
+            dx: dx,
+            dy: dy,
+            progress: TapBurstSpec.holdProgress,
+            player: widget.player,
+            reduceMotion: widget.reduceMotion,
+            persist: true,
+          ),
+        );
+      });
+      return;
+    }
+    final controller = AnimationController(
+      vsync: this,
+      duration: widget.reduceMotion ? AppMotion.fast : AppMotion.tapBurst,
+    );
+    final tap = _LiveTap(dx, dy, controller);
+    _taps.add(tap);
+    controller
+      ..addListener(() {
+        if (mounted) setState(() {});
+      })
+      ..forward().whenComplete(() {
+        controller.dispose();
+        _taps.remove(tap);
+        if (mounted) setState(() {});
+      });
   }
 
   @override
   Widget build(BuildContext context) {
     final onSignal = widget.signalFill != null;
-    final ink = onSignal ? AppColors.onSignal : widget.hue.ink;
+    final ink = onSignal ? AppColors.onSignal : dinoAccent(widget.player);
     final textColor = onSignal ? AppColors.onSignal : AppColors.text;
     final muted = onSignal ? AppColors.onSignalMuted : AppColors.textMuted;
     final bg = widget.signalFill ?? widget.hue.tint;
@@ -118,55 +196,100 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
 
     return Listener(
       behavior: HitTestBehavior.opaque,
-      onPointerDown: widget.onPointerDown,
-      child: AnimatedBuilder(
-        animation: _shake,
-        builder: (context, child) {
-          final t = _shake.value;
-          final active = t < 1;
-          final decay = (1 - t) * (1 - t);
-          final dx = active && !widget.reduceMotion
-              ? math.sin(t * math.pi * 2 * AppMotion.shakeOscillations) *
-                    AppDimens.shakeAmplitude *
-                    decay
-              : 0.0;
-          final flash = active ? AppColors.foulFlashAlpha * (1 - t) : 0.0;
-          final hold = fouled ? AppColors.foulHoldAlpha : 0.0;
-          final tint = math.max(flash, hold);
-          return ColoredBox(
-            color: bg,
+      onPointerDown: _onPointerDown,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final charSize = (box.maxHeight * 0.42).clamp(
+            72.0,
+            AppDimens.characterHalf,
+          );
+          return AnimatedBuilder(
+            animation: _shake,
+            builder: (context, child) {
+              final t = _shake.value;
+              final active = t < 1;
+              final decay = (1 - t) * (1 - t);
+              final dx = active && !widget.reduceMotion
+                  ? math.sin(t * math.pi * 2 * AppMotion.shakeOscillations) *
+                        AppDimens.shakeAmplitude *
+                        decay
+                  : 0.0;
+              final flash = active ? AppColors.foulFlashAlpha * (1 - t) : 0.0;
+              final hold = fouled ? AppColors.foulHoldAlpha : 0.0;
+              final tint = math.max(flash, hold);
+              return ColoredBox(
+                color: bg,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (widget.highlight) ColoredBox(color: AppColors.hairline),
+                    if (tint > 0)
+                      ColoredBox(
+                        color: AppColors.danger.withValues(alpha: tint),
+                      ),
+                    Transform.translate(offset: Offset(dx, 0), child: child),
+                  ],
+                ),
+              );
+            },
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (widget.highlight) const ColoredBox(color: AppColors.hairline),
-                if (tint > 0) ColoredBox(color: AppColors.danger.withValues(alpha: tint)),
-                Transform.translate(offset: Offset(dx, 0), child: child),
+                if (!onSignal) const ThemeDecor(kind: DecorKind.half),
+                if (onSignal) const SignalCelebrate(),
+                if (widget.result == null)
+                  Positioned(
+                    right: 4,
+                    bottom:
+                        AppDimens.halfBarHeight +
+                        AppDimens.halfPadding +
+                        widget.edgeInset,
+                    child: DinoArt.forPlayer(
+                      widget.player,
+                      mood: widget.mood,
+                      size: charSize,
+                    ),
+                  ),
+                Align(
+                  alignment: widget.result == null
+                      ? const Alignment(0, -0.15)
+                      : const Alignment(0, 0.12),
+                  child: _center(theme, textColor, muted),
+                ),
+                Positioned(
+                  left: AppDimens.halfPadding + widget.leadingInset,
+                  right: AppDimens.halfPadding,
+                  bottom: AppDimens.halfPadding + widget.edgeInset,
+                  child: _bar(theme, ink, textColor, muted),
+                ),
+                if (widget.target != null)
+                  Positioned(
+                    left: AppDimens.halfPadding,
+                    top: AppDimens.halfPadding,
+                    child: _TargetChip(
+                      label: widget.targetLabel ?? '',
+                      color: widget.target!,
+                      textColor: muted,
+                    ),
+                  ),
+                TapBurstLayer(
+                  bursts: [
+                    ...widget.frozenBursts,
+                    ..._held,
+                    for (final t in _taps)
+                      TapBurstSpec(
+                        dx: t.dx,
+                        dy: t.dy,
+                        progress: t.controller.value,
+                        player: widget.player,
+                        reduceMotion: widget.reduceMotion,
+                      ),
+                  ],
+                ),
               ],
             ),
           );
         },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Align(alignment: const Alignment(0, -0.15), child: _center(theme, textColor, muted)),
-            Positioned(
-              left: AppDimens.halfPadding + widget.leadingInset,
-              right: AppDimens.halfPadding,
-              bottom: AppDimens.halfPadding + widget.edgeInset,
-              child: _bar(theme, ink, textColor, muted),
-            ),
-            if (widget.target != null)
-              Positioned(
-                left: AppDimens.halfPadding,
-                top: AppDimens.halfPadding,
-                child: _TargetChip(
-                  label: widget.targetLabel ?? '',
-                  color: widget.target!,
-                  textColor: muted,
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }
@@ -181,11 +304,13 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
           child: Text(
             '${widget.score}',
             style: theme.displayLarge!.copyWith(
-              fontFamily: AppFonts.body,
+              fontFamily: AppFonts.bodyFor(Localizations.localeOf(context)),
               fontWeight: FontWeight.w700,
               fontSize: AppType.idleScore,
               color: textColor.withValues(alpha: AppType.idleScoreAlpha),
               fontFeatures: AppFonts.tabular,
+              shadows: const [],
+              letterSpacing: AppType.tightTracking,
             ),
           ),
         );
@@ -200,67 +325,98 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
       );
     }
     final labelColor = switch (r.tone) {
-      ResultTone.foul => widget.signalFill != null ? AppColors.onSignal : AppColors.danger,
-      ResultTone.win => widget.signalFill != null ? AppColors.onSignal : widget.hue.ink,
+      ResultTone.foul =>
+        widget.signalFill != null ? AppColors.onSignal : AppColors.danger,
+      ResultTone.win =>
+        widget.signalFill != null ? AppColors.onSignal : dinoAccent(widget.player),
       _ => muted,
     };
     final bigColor = r.tone == ResultTone.lose ? muted : textColor;
+    final forceTint = r.tone == ResultTone.foul || widget.signalFill != null;
     // No entry animation: the result is fully visible on its first frame.
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimens.page),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (r.icon != null) ...[
-            Container(
-              width: AppDimens.foulIcon,
-              height: AppDimens.foulIcon,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: labelColor, width: AppDimens.foulIconStroke),
+      padding: EdgeInsets.fromLTRB(
+        AppDimens.page,
+        0,
+        AppDimens.page,
+        AppDimens.halfBarHeight + widget.edgeInset,
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (r.icon != null) ...[
+              Container(
+                width: AppDimens.foulIcon,
+                height: AppDimens.foulIcon,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: labelColor,
+                    width: AppDimens.foulIconStroke,
+                  ),
+                ),
+                child: Icon(
+                  r.icon,
+                  color: labelColor,
+                  size: AppDimens.foulIcon * 0.62,
+                ),
               ),
-              child: Icon(r.icon, color: labelColor, size: AppDimens.foulIcon * 0.62),
-            ),
-            const SizedBox(height: AppDimens.gapS),
-          ],
-          if (r.badge != null) ...[
-            _Badge(
-              text: r.badge!,
-              filled: r.tone == ResultTone.win,
-              color: r.tone == ResultTone.win ? widget.hue.ink : muted,
-            ),
-            const SizedBox(height: AppDimens.gapS),
-          ],
-          if (r.label != null)
-            Text(
-              r.label!,
-              textAlign: TextAlign.center,
-              style: theme.displayMedium!.copyWith(
-                fontSize: AppType.resultLabel,
-                color: labelColor,
+              const SizedBox(height: AppDimens.gapS),
+            ],
+            if (r.badge != null) ...[
+              _Badge(
+                text: r.badge!,
+                filled: r.tone == ResultTone.win,
+                color: r.tone == ResultTone.win
+                    ? dinoAccent(widget.player)
+                    : muted,
               ),
-            ),
-          if (r.big != null) ...[
-            if (r.label != null) const SizedBox(height: AppDimens.gapXs),
-            Text(
-              r.big!,
-              textAlign: TextAlign.center,
-              style: theme.displayLarge!.copyWith(
-                fontSize: r.tone == ResultTone.lose ? AppType.resultLabel : AppType.resultMs,
-                color: bigColor,
-                fontFeatures: AppFonts.tabular,
+              const SizedBox(height: AppDimens.gapS),
+            ],
+            if (r.label != null)
+              Text(
+                r.label!,
+                textAlign: TextAlign.center,
+                style: theme.displayMedium!.copyWith(
+                  fontSize: AppType.resultLabel,
+                  color: forceTint ? labelColor : null,
+                ),
               ),
+            if (r.big != null) ...[
+              if (r.label != null) const SizedBox(height: AppDimens.gapXs),
+              Text(
+                r.big!,
+                textAlign: TextAlign.center,
+                style: theme.displayLarge!.copyWith(
+                  fontSize: r.tone == ResultTone.lose
+                      ? AppType.resultLabel
+                      : AppType.resultMs,
+                  color: forceTint ? bigColor : null,
+                  fontFeatures: AppFonts.tabular,
+                ),
+              ),
+            ],
+            if (r.sub != null) ...[
+              const SizedBox(height: AppDimens.gapS),
+              Text(
+                r.sub!,
+                textAlign: TextAlign.center,
+                style: theme.bodyLarge!.copyWith(
+                  color: muted,
+                  fontSize: AppType.resultSub,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppDimens.gapM),
+            DinoArt.forPlayer(
+              widget.player,
+              mood: widget.mood,
+              size: AppDimens.characterResult,
             ),
           ],
-          if (r.sub != null) ...[
-            const SizedBox(height: AppDimens.gapS),
-            Text(
-              r.sub!,
-              textAlign: TextAlign.center,
-              style: theme.bodyLarge!.copyWith(color: muted, fontSize: AppType.resultSub),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -314,11 +470,16 @@ class _HalfPadState extends State<HalfPad> with SingleTickerProviderStateMixin {
     );
   }
 
-  Color onSignalAware(Color muted) => widget.signalFill != null ? muted : AppColors.textFaint;
+  Color onSignalAware(Color muted) =>
+      widget.signalFill != null ? muted : AppColors.textFaint;
 }
 
 class _TargetChip extends StatelessWidget {
-  const _TargetChip({required this.label, required this.color, required this.textColor});
+  const _TargetChip({
+    required this.label,
+    required this.color,
+    required this.textColor,
+  });
 
   final String label;
   final Color color;
@@ -329,7 +490,11 @@ class _TargetChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: textColor)),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall!
+              .copyWith(color: textColor),
+        ),
         const SizedBox(width: AppDimens.gapS),
         Container(
           width: AppDimens.targetDot,
@@ -338,12 +503,18 @@ class _TargetChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.hairline, width: AppDimens.hairline),
+            border: Border.all(
+              color: AppColors.hairline,
+              width: AppDimens.hairline,
+            ),
           ),
           child: Container(
             width: AppDimens.targetDot * AppDimens.orbShapeFactor * 1.4,
             height: AppDimens.targetDot * AppDimens.orbShapeFactor * 1.4,
-            decoration: const BoxDecoration(color: AppColors.onSignal, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: AppColors.onSignal,
+              shape: BoxShape.circle,
+            ),
           ),
         ),
       ],

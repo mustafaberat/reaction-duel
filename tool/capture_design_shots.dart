@@ -56,7 +56,6 @@ void main() {
     );
     SharedPreferences.setMockInitialValues({
       PrefsKeys.language: 'tr',
-      PrefsKeys.howToSeen: true,
       PrefsKeys.onboardingDone: true,
       PrefsKeys.bestReactionMs: 187,
       PrefsKeys.totalMatches: 12,
@@ -67,16 +66,23 @@ void main() {
     final services = AppServices(settings: settings, stats: stats);
     const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
     final targetConfig = classicConfig.copyWith(
-      rules: const DuelSettings(mode: DuelMode.targetColor, target: SignalColor.blue),
+      rules: const DuelSettings(
+        mode: DuelMode.targetColor,
+        target: SignalColor.blue,
+      ),
     );
 
-    Future<void> shot(String name, Widget home, {Future<void> Function()? after}) async {
+    Future<void> shot(
+      String name,
+      Widget home, {
+      Future<void> Function()? after,
+    }) async {
       await _capture(tester, services, name, home, after: after);
     }
 
     // --- Turkish ---
     await settings.setMatch(classicConfig);
-    await shot('01-home', const HomeScreen(autoOpenHowTo: false));
+    await shot('01-home', const HomeScreen());
     await shot('02-match-setup', const MatchSetupScreen());
 
     await shot('03-duel-waiting', _duel(classicConfig, _Scene.waiting));
@@ -90,10 +96,13 @@ void main() {
 
     // --- English ---
     await settings.setLanguage('en');
-    await shot('01-home-en', const HomeScreen(autoOpenHowTo: false));
+    await shot('01-home-en', const HomeScreen());
     await shot(
       '04-duel-signal-en',
-      _duel(classicConfig.copyWith(p1Name: 'Alex', p2Name: 'Sam'), _Scene.signal),
+      _duel(
+        classicConfig.copyWith(p1Name: 'Alex', p2Name: 'Sam'),
+        _Scene.signal,
+      ),
     );
     await settings.setLanguage('tr');
 
@@ -102,19 +111,31 @@ void main() {
     await stats.recordMatch(endEngine.state);
     await shot(
       '09-match-end',
-      DuelScreen(config: classicConfig, engine: endEngine, driveTimers: false, showCoach: false),
+      DuelScreen(
+        config: classicConfig,
+        engine: endEngine,
+        driveTimers: false,
+        showCoach: false,
+      ),
     );
 
     for (var i = 0; i < HowStep.values.length; i++) {
       await shot(
         '10-howto-step${i + 1}',
-        HowToPlayScreen(initialStep: i, includeDecoyStep: true, frozenProgress: _howToKeyFrames[i]),
+        HowToPlayScreen(
+          initialStep: i,
+          includeDecoyStep: true,
+          frozenProgress: _howToKeyFrames[i],
+        ),
       );
     }
 
     await shot('11-settings', const SettingsScreen());
     await shot('12-pause', _duel(classicConfig, _Scene.paused));
-    await shot('13-duel-coach', _duel(classicConfig, _Scene.coach, coach: true));
+    await shot(
+      '13-duel-coach',
+      _duel(classicConfig, _Scene.coach, coach: true),
+    );
   }, timeout: const Timeout(Duration(minutes: 5)));
 }
 
@@ -226,7 +247,8 @@ Future<void> _capture(
   await tester.pump(const Duration(milliseconds: 60));
 
   final bytes = await tester.runAsync(() async {
-    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final boundary =
+        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: _dpr);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     return data!.buffer.asUint8List();
@@ -237,22 +259,33 @@ Future<void> _capture(
 }
 
 Future<void> _loadFonts() async {
-  Future<ByteData> bytes(String path) async => ByteData.sublistView(await File(path).readAsBytes());
+  Future<ByteData> bytes(String path) async =>
+      ByteData.sublistView(await File(path).readAsBytes());
 
   final root = Platform.environment['FLUTTER_ROOT'];
   final icons = FontLoader('MaterialIcons')
-    ..addFont(bytes('$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'));
+    ..addFont(
+      bytes(
+        '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+      ),
+    );
   await icons.load();
 
-  final inter = FontLoader('Inter');
-  for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
-    inter.addFont(bytes('assets/fonts/Inter-$w.ttf'));
+  Future<void> family(String name, List<String> files) async {
+    final loader = FontLoader(name);
+    for (final f in files) {
+      loader.addFont(bytes('assets/fonts/$f'));
+    }
+    await loader.load();
   }
-  await inter.load();
 
-  final sora = FontLoader('Sora');
-  for (final w in ['SemiBold', 'Bold', 'ExtraBold']) {
-    sora.addFont(bytes('assets/fonts/Sora-$w.ttf'));
-  }
-  await sora.load();
+  await family('Baloo2', ['Baloo2-Bold.ttf', 'Baloo2-ExtraBold.ttf']);
+  await family('Nunito', [
+    'Nunito-Regular.ttf',
+    'Nunito-SemiBold.ttf',
+    'Nunito-Bold.ttf',
+  ]);
+  await family('ZenMaruGothic', ['ZenMaruGothic-Bold.ttf']);
+  await family('Jua', ['Jua-Regular.ttf']);
+  await family('ZCOOLKuaiLe', ['ZCOOLKuaiLe-Regular.ttf']);
 }

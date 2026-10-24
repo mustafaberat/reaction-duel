@@ -18,6 +18,7 @@ import '../game/duel_labels.dart';
 import '../game/duel_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/settings_service.dart';
+import '../theme/decor.dart';
 
 class MatchSetupScreen extends StatefulWidget {
   const MatchSetupScreen({super.key});
@@ -27,24 +28,6 @@ class MatchSetupScreen extends StatefulWidget {
 }
 
 class _MatchSetupScreenState extends State<MatchSetupScreen> {
-  late final TextEditingController _p1;
-  late final TextEditingController _p2;
-
-  @override
-  void initState() {
-    super.initState();
-    final match = AppScope.read(context).settings.match;
-    _p1 = TextEditingController(text: match.p1Name);
-    _p2 = TextEditingController(text: match.p2Name);
-  }
-
-  @override
-  void dispose() {
-    _p1.dispose();
-    _p2.dispose();
-    super.dispose();
-  }
-
   SettingsService get _settings => AppScope.read(context).settings;
 
   void _update(MatchConfig Function(MatchConfig) change) {
@@ -56,8 +39,7 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
   }
 
   void _start() {
-    FocusScope.of(context).unfocus();
-    final config = _settings.match.copyWith(p1Name: _p1.text.trim(), p2Name: _p2.text.trim());
+    final config = _settings.match.copyWith(p1Name: '', p2Name: '');
     _settings.setMatch(config);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -75,12 +57,11 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
     final match = services.settings.match;
     final rules = match.rules;
     final cb = rules.colorBlind;
-    final (h1, h2) = match.resolvedHues;
     final seconds = NumberFormat('0.0', Localizations.localeOf(context).toString());
     String range(WaitPreset w) =>
         l10n.secondsRange(seconds.format(w.minMs / 1000), seconds.format(w.maxMs / 1000));
 
-    return Scaffold(
+    return ThemedScaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -94,7 +75,7 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
                       AppDimens.page,
                       0,
                       AppDimens.page,
-                      AppDimens.gapXl,
+                      AppDimens.gapXxl,
                     ),
                     children: [
                       SectionLabel(l10n.setupMode),
@@ -177,18 +158,16 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
                       GroupCard(
                         children: [
                           _PlayerRow(
-                            controller: _p1,
-                            hint: l10n.player1,
-                            hue: h1,
+                            label: l10n.player1,
+                            hue: match.p1Hue,
+                            blocked: match.p2Hue,
                             onHue: (h) => _update((m) => m.copyWith(p1Hue: h)),
-                            onName: (v) => _update((m) => m.copyWith(p1Name: v.trim())),
                           ),
                           _PlayerRow(
-                            controller: _p2,
-                            hint: l10n.player2,
-                            hue: h2,
+                            label: l10n.player2,
+                            hue: match.p2Hue,
+                            blocked: match.p1Hue,
                             onHue: (h) => _update((m) => m.copyWith(p2Hue: h)),
-                            onName: (v) => _update((m) => m.copyWith(p2Name: v.trim())),
                           ),
                         ],
                       ),
@@ -200,7 +179,7 @@ class _MatchSetupScreenState extends State<MatchSetupScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppDimens.page,
-                AppDimens.gapS,
+                AppDimens.gapM,
                 AppDimens.page,
                 AppDimens.gapL,
               ),
@@ -288,18 +267,16 @@ class _ColorChips extends StatelessWidget {
 
 class _PlayerRow extends StatelessWidget {
   const _PlayerRow({
-    required this.controller,
-    required this.hint,
+    required this.label,
     required this.hue,
+    required this.blocked,
     required this.onHue,
-    required this.onName,
   });
 
-  final TextEditingController controller;
-  final String hint;
+  final String label;
   final PlayerHue hue;
+  final PlayerHue blocked;
   final ValueChanged<PlayerHue> onHue;
-  final ValueChanged<String> onName;
 
   @override
   Widget build(BuildContext context) {
@@ -308,51 +285,62 @@ class _PlayerRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppDimens.gapL, vertical: AppDimens.gapS),
       child: Row(
         children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              maxLength: GameRules.maxNameLength,
-              onChanged: onName,
-              textCapitalization: TextCapitalization.words,
-              style: theme.titleMedium,
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: theme.titleMedium!.copyWith(color: AppColors.textMuted),
-                counterText: '',
-                border: InputBorder.none,
-                isDense: true,
+          Expanded(child: Text(label, style: theme.titleMedium)),
+          for (final h in PlayerHue.values)
+            _HueDot(
+              hue: h,
+              selected: h == hue,
+              taken: h == blocked && h != hue,
+              onTap: () => onHue(h),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HueDot extends StatelessWidget {
+  const _HueDot({
+    required this.hue,
+    required this.selected,
+    required this.taken,
+    required this.onTap,
+  });
+
+  final PlayerHue hue;
+  final bool selected;
+  final bool taken;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = selected ? AppDimens.colorChip / 2 : AppDimens.dot + AppDimens.gapXs;
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: !taken,
+      label: hue.name,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: taken ? null : onTap,
+        child: Container(
+          width: AppDimens.iconButton - AppDimens.gapM,
+          height: AppDimens.iconButton,
+          alignment: Alignment.center,
+          child: AnimatedContainer(
+            duration: AppMotion.fast,
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: hue.ink,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: selected ? AppColors.text : AppColors.transparent,
+                width: AppDimens.dotStroke,
               ),
             ),
           ),
-          for (final h in PlayerHue.values)
-            Semantics(
-              button: true,
-              selected: h == hue,
-              label: h.name,
-              excludeSemantics: true,
-              child: GestureDetector(
-                onTap: () => onHue(h),
-                child: Container(
-                  width: AppDimens.iconButton - AppDimens.gapM,
-                  height: AppDimens.iconButton,
-                  alignment: Alignment.center,
-                  child: AnimatedContainer(
-                    duration: AppMotion.fast,
-                    width: h == hue ? AppDimens.colorChip / 2 : AppDimens.dot + AppDimens.gapXs,
-                    height: h == hue ? AppDimens.colorChip / 2 : AppDimens.dot + AppDimens.gapXs,
-                    decoration: BoxDecoration(
-                      color: h.ink,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: h == hue ? AppColors.text : AppColors.transparent,
-                        width: AppDimens.dotStroke,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }

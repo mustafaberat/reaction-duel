@@ -1,7 +1,8 @@
 /// AdMob wrapper (Click Battle pattern). Banner on Home only; interstitial
 /// after match end → Home / Change settings, gated by [InterstitialPolicy].
 ///
-/// Skipped on web and under `FLUTTER_TEST` (no platform channel).
+/// Play Families: child-directed, under-age-of-consent, max rating G,
+/// non-personalized requests. Skipped on web and under `FLUTTER_TEST`.
 library;
 
 import 'dart:async';
@@ -34,8 +35,15 @@ class AdService {
     _initialized = true;
     _policy = InterstitialPolicy(firstSession: firstSession);
     if (!enabled) return;
+    unawaited(_initializeSdk());
+  }
+
+  Future<void> _initializeSdk() async {
     try {
-      MobileAds.instance.initialize();
+      final config = AdConfig.familiesRequestConfiguration;
+      await MobileAds.instance.updateRequestConfiguration(config);
+      await MobileAds.instance.initialize();
+      await MobileAds.instance.updateRequestConfiguration(config);
       _loadBanner();
     } catch (_) {}
   }
@@ -46,7 +54,7 @@ class AdService {
     BannerAd(
       adUnitId: AdConfig.homeBanner,
       size: AdSize.banner,
-      request: const AdRequest(),
+      request: AdConfig.request,
       listener: BannerAdListener(
         onAdLoaded: (ad) => banner.value = ad as BannerAd,
         onAdFailedToLoad: (ad, _) => ad.dispose(),
@@ -64,7 +72,7 @@ class AdService {
     _loadingInterstitial = true;
     InterstitialAd.load(
       adUnitId: AdConfig.matchEndInterstitial,
-      request: const AdRequest(),
+      request: AdConfig.request,
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           _interstitial = ad;

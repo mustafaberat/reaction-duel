@@ -10,14 +10,14 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Reaction Duel';
+  String get appTitle => 'Reaction Rivals';
 
   @override
-  String get homeTagline => 'Wait for the color. Tap first.';
+  String get homeTagline => '等颜色变了再点。';
 
   @override
   String homeRecord(int ms) {
-    return 'Best $ms ms';
+    return '最佳 $ms ms';
   }
 
   @override
@@ -25,141 +25,138 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count matches',
-      one: '1 match',
+      other: '$count 场',
     );
     return '$_temp0';
   }
 
   @override
-  String get play => 'Play';
+  String get play => '开始';
 
   @override
-  String get settings => 'Settings';
+  String get settings => '设置';
 
   @override
-  String get howToPlay => 'How to play';
+  String get howToPlay => '玩法';
 
   @override
-  String get back => 'Back';
+  String get back => '返回';
 
   @override
-  String get setupTitle => 'Match setup';
+  String get setupTitle => '对局设置';
 
   @override
-  String get setupMode => 'Mode';
+  String get setupMode => '模式';
 
   @override
-  String get modeClassic => 'Classic';
+  String get modeClassic => '经典';
 
   @override
-  String get modeTarget => 'Target Color';
+  String get modeTarget => '目标颜色';
 
   @override
-  String get modeClassicHint =>
-      'Tap the moment the center says GO! and turns green.';
+  String get modeClassicHint => '中间出现点！并变绿时再点。';
 
   @override
-  String get modeTargetHint =>
-      'Tap only on your color, shown with the ● shape. Other colors and shapes are traps.';
+  String get modeTargetHint => '只在自己的颜色、● 形状时点。其他颜色和形状是陷阱。';
 
   @override
-  String get setupTargetColor => 'Target color';
+  String get setupTargetColor => '目标颜色';
 
   @override
-  String get setupColorBlindNote => 'Color-blind palette · shapes on';
+  String get setupColorBlindNote => '色盲配色 · 形状开';
 
   @override
-  String get setupWinScore => 'Points to win';
+  String get setupWinScore => '获胜分数';
 
   @override
-  String get setupWait => 'Wait time';
+  String get setupWait => '等待时间';
 
   @override
-  String get waitShort => 'Short';
+  String get waitShort => '短';
 
   @override
-  String get waitNormal => 'Normal';
+  String get waitNormal => '普通';
 
   @override
-  String get waitLong => 'Long';
+  String get waitLong => '长';
 
   @override
   String secondsRange(String min, String max) {
-    return '$min–$max s';
+    return '$min–$max 秒';
   }
 
   @override
-  String get setupPenalty => 'Early tap penalty';
+  String get setupPenalty => '抢点惩罚';
 
   @override
-  String get penaltyOpponent => 'Rival +1';
+  String get penaltyOpponent => '对手 +1';
 
   @override
-  String get penaltySelf => 'Self −1';
+  String get penaltySelf => '自己 −1';
 
   @override
-  String get penaltyRound => 'Round only';
+  String get penaltyRound => '仅本轮';
 
   @override
-  String get setupGuessGuard => 'Anticipation guard';
+  String get setupGuessGuard => '防猜';
 
   @override
-  String get setupGuessGuardHint => 'Taps under 80 ms count as a guess.';
+  String get setupGuessGuardHint => '快于 80 ms 的点击算猜测。';
 
   @override
-  String get setupPlayers => 'Players';
+  String get setupPlayers => '玩家';
 
   @override
-  String get player1 => 'Player 1';
+  String get player1 => '玩家 1';
 
   @override
-  String get player2 => 'Player 2';
+  String get player2 => '玩家 2';
 
   @override
-  String get start => 'Start';
+  String get start => '开始';
 
   @override
-  String get colorGreen => 'Green';
+  String get colorGreen => '绿';
 
   @override
-  String get colorBlue => 'Blue';
+  String get colorBlue => '蓝';
 
   @override
-  String get colorYellow => 'Yellow';
+  String get colorYellow => '黄';
 
   @override
-  String get colorOrange => 'Orange';
+  String get colorOrange => '橙';
 
   @override
-  String get colorPink => 'Pink';
+  String get colorPink => '粉';
 
   @override
-  String get colorPurple => 'Purple';
+  String get colorPurple => '紫';
 
   @override
-  String get colorWhite => 'White';
+  String get colorWhite => '白';
 
   @override
-  String get colorSky => 'Sky';
+  String get colorSky => '天蓝';
 
   @override
-  String get duelEarly => 'TOO EARLY!';
+  String get duelEarly => '太早！';
 
   @override
-  String get duelGuess => 'GUESS!';
+  String get duelGuess => '猜的！';
 
   @override
-  String get duelDecoy => 'DECOY!';
+  String get duelDecoy => '陷阱！';
 
   @override
-  String get duelTie => 'Tie';
+  String get duelTie => '平局';
 
   @override
-  String get duelTieSub => 'Replay the round';
+  String get duelTieSub => '重赛本轮';
 
   @override
-  String get duelNoContest => 'No one tapped';
+  String get duelNoContest => '没人点';
 
   @override
   String get duelPlusOne => '+1';
@@ -168,7 +165,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get duelMinusOne => '−1';
 
   @override
-  String get duelRoundLost => 'Round lost';
+  String get duelRoundLost => '本轮输了';
 
   @override
   String duelMs(int ms) {
@@ -179,162 +176,159 @@ class AppLocalizationsZh extends AppLocalizations {
   String get duelNoTime => '—';
 
   @override
-  String get duelTarget => 'Target';
+  String get duelTarget => '目标';
 
   @override
-  String get duelCoach => 'Don\'t tap on WAIT · Tap on GO!';
+  String get duelCoach => '显示等时不要点 · 点！时再点';
 
   @override
-  String get duelWait => 'WAIT';
+  String get duelWait => '等';
 
   @override
-  String get duelGo => 'GO!';
+  String get duelGo => '点！';
 
   @override
-  String get duelWinner => 'WINNER';
+  String get duelWinner => '胜';
 
   @override
-  String get duelTooSlow => 'TOO SLOW';
+  String get duelTooSlow => '太慢';
 
   @override
-  String get duelRivalFoul => 'Rival tapped early';
+  String get duelRivalFoul => '对手点太早';
 
   @override
-  String get duelGuessSub => 'Faster than 80 ms';
+  String get duelGuessSub => '快于 80 ms';
 
   @override
-  String get duelPause => 'Pause';
+  String get duelPause => '暂停';
 
   @override
-  String get pauseTitle => 'Paused';
+  String get pauseTitle => '已暂停';
 
   @override
-  String get pauseResume => 'Resume';
+  String get pauseResume => '继续';
 
   @override
-  String get pauseRestart => 'Restart';
+  String get pauseRestart => '重开';
 
   @override
-  String get home => 'Home';
+  String get home => '首页';
 
   @override
   String endWinner(String name) {
-    return '$name wins';
+    return '$name 赢了';
   }
 
   @override
-  String get endBest => 'Best';
+  String get endBest => '最佳';
 
   @override
-  String get endAverage => 'Average';
+  String get endAverage => '平均';
 
   @override
-  String get endFouls => 'Fouls';
+  String get endFouls => '犯规';
 
   @override
-  String get endSeries => 'Series';
+  String get endSeries => '累计';
 
   @override
-  String get endNewRecord => 'New device record';
+  String get endNewRecord => '新纪录';
 
   @override
-  String get endRematch => 'Rematch';
+  String get endRematch => '再来一局';
 
   @override
-  String get endChangeSettings => 'Change settings';
+  String get endChangeSettings => '设置';
 
   @override
-  String get settingsGame => 'Game';
+  String get settingsGame => '游戏';
 
   @override
-  String get settingsGeneral => 'General';
+  String get settingsGeneral => '通用';
 
   @override
-  String get settingsAbout => 'About';
+  String get settingsAbout => '关于';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get settingsLanguage => '语言';
 
   @override
-  String get settingsLanguageSystem => 'System default';
+  String get settingsLanguageSystem => '跟随系统';
 
   @override
-  String get settingsColorBlind => 'Color-blind mode';
+  String get settingsColorBlind => '色盲模式';
 
   @override
-  String get settingsColorBlindHint =>
-      'Color-blind safe palette. Target Color always shows shapes.';
+  String get settingsColorBlindHint => '安全配色。目标颜色总会显示形状。';
 
   @override
-  String get settingsReduceMotion => 'Reduce motion';
+  String get settingsReduceMotion => '减少动效';
 
   @override
-  String get settingsAccessibility => 'Accessibility';
+  String get settingsAccessibility => '无障碍';
 
   @override
-  String get motionSystem => 'System';
+  String get motionSystem => '系统';
 
   @override
-  String get motionOn => 'On';
+  String get motionOn => '开';
 
   @override
-  String get motionOff => 'Off';
+  String get motionOff => '关';
 
   @override
-  String get settingsShowTips => 'Show first-game tips again';
+  String get settingsShowTips => '再次显示首次提示';
 
   @override
-  String get settingsTipsReset => 'Tips will show in your next match.';
+  String get settingsTipsReset => '提示会在下一场出现。';
 
   @override
-  String get settingsPrivacy => 'Privacy policy';
+  String get settingsPrivacy => '隐私政策';
 
   @override
-  String get settingsVersion => 'Version';
+  String get settingsVersion => '版本';
 
   @override
-  String get howStep1Title => 'Sit face to face';
+  String get howStep1Title => '面对面坐下';
 
   @override
-  String get howStep1Body =>
-      'Put the phone between you. Each player taps their own half.';
+  String get howStep1Body => '把手机放中间。每人点自己的半边。';
 
   @override
-  String get howStep2Title => 'Wait';
+  String get howStep2Title => '等待';
 
   @override
-  String get howStep2Body => 'Don\'t touch while the center says WAIT.';
+  String get howStep2Body => '中间显示等的时候不要点。';
 
   @override
-  String get howStep3Title => 'GO! means tap';
+  String get howStep3Title => '点！再点';
 
   @override
-  String get howStep3Body => 'When GO! appears, the first tap wins the point.';
+  String get howStep3Body => '出现点！时，先点的人得分。';
 
   @override
-  String get howStep4Title => 'Don\'t jump the gun';
+  String get howStep4Title => '不要抢点';
 
   @override
-  String get howStep4Body => 'Tap too early and the point goes to your rival.';
+  String get howStep4Body => '点太早，分数给对手。';
 
   @override
-  String get howStep5Title => 'Decoy colors';
+  String get howStep5Title => '陷阱颜色';
 
   @override
-  String get howStep5Body =>
-      'Only tap on your color — the ● shape. Other shapes are traps.';
+  String get howStep5Body => '只在自己的颜色、● 形状时点。其他形状是陷阱。';
 
   @override
-  String get howNext => 'Next';
+  String get howNext => '下一步';
 
   @override
-  String get howSkip => 'Skip';
+  String get howSkip => '跳过';
 
   @override
-  String get howPlayNow => 'Play now';
+  String get howPlayNow => '开始玩';
 
   @override
-  String get howClose => 'Close';
+  String get howClose => '关闭';
 
   @override
   String howStepOf(int step, int total) {

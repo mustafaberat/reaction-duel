@@ -30,7 +30,7 @@ class MatchConfig {
   final PlayerHue p2Hue;
 
   /// Hues after auto-switching away from the target color.
-  (PlayerHue, PlayerHue) get resolvedHues => PlayerHue.resolve(p1Hue, p2Hue, rules.effectiveTarget);
+  (PlayerHue, PlayerHue) get resolvedHues => PlayerHue.resolve(p1Hue, p2Hue);
 
   MatchConfig copyWith({
     DuelSettings? rules,
@@ -81,7 +81,6 @@ class SettingsService extends ChangeNotifier {
   bool _colorBlind = false;
   ReduceMotionPref _reduceMotion = ReduceMotionPref.system;
   bool _onboardingDone = false;
-  bool _howToSeen = false;
   MatchConfig _match = const MatchConfig();
 
   /// Null = follow the device language.
@@ -90,7 +89,6 @@ class SettingsService extends ChangeNotifier {
   bool get colorBlind => _colorBlind;
   ReduceMotionPref get reduceMotion => _reduceMotion;
   bool get onboardingDone => _onboardingDone;
-  bool get howToSeen => _howToSeen;
 
   /// Match setup with the global color-blind flag applied.
   MatchConfig get match => _match.copyWith(rules: _match.rules.copyWith(colorBlind: _colorBlind));
@@ -109,7 +107,6 @@ class SettingsService extends ChangeNotifier {
         _byName(ReduceMotionPref.values, _prefs.getString(PrefsKeys.reduceMotion)) ??
         ReduceMotionPref.system;
     _onboardingDone = _prefs.getBool(PrefsKeys.onboardingDone) ?? false;
-    _howToSeen = _prefs.getBool(PrefsKeys.howToSeen) ?? false;
 
     final winScore = _prefs.getInt(PrefsKeys.winScore);
     _match = MatchConfig(
@@ -124,12 +121,19 @@ class SettingsService extends ChangeNotifier {
             FoulPenalty.opponentPlusOne,
         guessGuard: _prefs.getBool(PrefsKeys.guessGuard) ?? true,
       ),
-      p1Name: _prefs.getString(PrefsKeys.p1Name) ?? '',
-      p2Name: _prefs.getString(PrefsKeys.p2Name) ?? '',
-      p1Hue: _byName(PlayerHue.values, _prefs.getString(PrefsKeys.p1Color)) ?? PlayerHue.defaultP1,
-      p2Hue: _byName(PlayerHue.values, _prefs.getString(PrefsKeys.p2Color)) ?? PlayerHue.defaultP2,
+      p1Name: '',
+      p2Name: '',
+      p1Hue: _loadedHue(PrefsKeys.p1Color, PlayerHue.defaultP1),
+      p2Hue: _loadedHue(PrefsKeys.p2Color, PlayerHue.defaultP2),
     );
+    if (_match.p1Hue == _match.p2Hue) {
+      final (_, p2) = _match.resolvedHues;
+      _match = _match.copyWith(p2Hue: p2);
+    }
   }
+
+  PlayerHue _loadedHue(String key, PlayerHue fallback) =>
+      _byName(PlayerHue.values, _prefs.getString(key)) ?? fallback;
 
   static T? _byName<T extends Enum>(List<T> values, String? name) {
     for (final v in values) {
@@ -165,12 +169,6 @@ class SettingsService extends ChangeNotifier {
     _onboardingDone = value;
     notifyListeners();
     await _prefs.setBool(PrefsKeys.onboardingDone, value);
-  }
-
-  Future<void> setHowToSeen() async {
-    if (_howToSeen) return;
-    _howToSeen = true;
-    await _prefs.setBool(PrefsKeys.howToSeen, true);
   }
 
   Future<void> setMatch(MatchConfig config) async {

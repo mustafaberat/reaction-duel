@@ -581,4 +581,98 @@ void main() {
       expect(engine.nextDeadline, clock.now() + _ms(GameTiming.cooldownMs));
     });
   });
+
+  group('one tap per player per round', () {
+    test('repeated early taps are ignored; mark lock resets next round', () {
+      final clock = FakeClock();
+      final engine = _engine(clock, settings: const DuelSettings(winScore: 99));
+      _runTo(engine, clock, DuelPhase.waiting);
+
+      expect(engine.tap(Player.p1), isTrue);
+      expect(engine.state.phase, DuelPhase.foul);
+      expect(engine.state.hasTapped(Player.p1), isTrue);
+      expect(engine.state.hasTapped(Player.p2), isFalse);
+      expect(engine.state.scores, [0, 1]);
+      expect(engine.state.statsOf(Player.p1).fouls, 1);
+
+      expect(engine.tap(Player.p1), isFalse);
+      expect(engine.tap(Player.p1), isFalse);
+      expect(engine.state.scores, [0, 1]);
+      expect(engine.state.statsOf(Player.p1).fouls, 1);
+      expect(engine.state.lastResult!.foulBy, Player.p1);
+
+      _runTo(engine, clock, DuelPhase.waiting);
+      expect(engine.state.hasTapped(Player.p1), isFalse);
+      expect(engine.state.hasTapped(Player.p2), isFalse);
+
+      expect(engine.tap(Player.p1), isTrue);
+      expect(engine.state.scores, [0, 2]);
+      expect(engine.state.statsOf(Player.p1).fouls, 2);
+    });
+
+    test('repeated taps after GO by the same player are ignored', () {
+      final clock = FakeClock();
+      final engine = _engine(clock, settings: const DuelSettings(winScore: 99));
+      _runTo(engine, clock, DuelPhase.signal);
+      final s = engine.state.signalAt!;
+
+      expect(engine.tap(Player.p1, at: s + _ms(200)), isTrue);
+      expect(engine.state.hasTapped(Player.p1), isTrue);
+      expect(engine.state.phase, DuelPhase.signal);
+
+      expect(engine.tap(Player.p1, at: s + _ms(250)), isFalse);
+      expect(engine.tap(Player.p1, at: s + _ms(280)), isFalse);
+      expect(engine.state.phase, DuelPhase.signal);
+      expect(engine.state.scores, [0, 0]);
+
+      clock.set(s + _ms(201));
+      engine.tick();
+      expect(engine.state.phase, DuelPhase.scored);
+      expect(engine.state.scores, [1, 0]);
+      expect(engine.state.lastResult!.winnerMs, 200);
+      expect(engine.state.lastResult!.loserMs, isNull);
+
+      expect(engine.tap(Player.p1, at: s + _ms(400)), isFalse);
+      expect(engine.state.scores, [1, 0]);
+    });
+
+    test('other player still plays that round after the first is locked', () {
+      final clock = FakeClock();
+      final engine = _engine(clock, settings: const DuelSettings(winScore: 99));
+      _runTo(engine, clock, DuelPhase.signal);
+      final s = engine.state.signalAt!;
+
+      expect(engine.tap(Player.p1, at: s + _ms(220)), isTrue);
+      expect(engine.state.hasTapped(Player.p1), isTrue);
+      expect(engine.state.hasTapped(Player.p2), isFalse);
+
+      expect(engine.tap(Player.p2, at: s + _ms(310)), isTrue);
+      expect(engine.state.phase, DuelPhase.scored);
+      expect(engine.state.hasTapped(Player.p2), isTrue);
+      expect(engine.state.lastResult!.winner, Player.p1);
+      expect(engine.state.lastResult!.msFor(Player.p2), 310);
+
+      expect(engine.tap(Player.p2, at: s + _ms(400)), isFalse);
+      expect(engine.state.lastResult!.msFor(Player.p2), 310);
+    });
+
+    test('early lock on one side does not lock the other next round', () {
+      final clock = FakeClock();
+      final engine = _engine(clock, settings: const DuelSettings(winScore: 99));
+      _runTo(engine, clock, DuelPhase.waiting);
+      engine.tap(Player.p1);
+      expect(engine.state.hasTapped(Player.p2), isFalse);
+
+      _runTo(engine, clock, DuelPhase.signal);
+      final s = engine.state.signalAt!;
+      expect(engine.state.hasTapped(Player.p1), isFalse);
+      expect(engine.state.hasTapped(Player.p2), isFalse);
+      expect(engine.tap(Player.p2, at: s + _ms(240)), isTrue);
+      clock.set(s + _ms(241));
+      engine.tick();
+      expect(engine.state.phase, DuelPhase.scored);
+      expect(engine.state.scores, [0, 2]);
+      expect(engine.state.lastResult!.winner, Player.p2);
+    });
+  });
 }

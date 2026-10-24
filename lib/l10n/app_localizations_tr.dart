@@ -10,7 +10,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Refleks Düellosu';
+  String get appTitle => 'Reaction Rivals';
 
   @override
   String get homeTagline => 'Rengi bekle. İlk sen bas.';
@@ -234,7 +234,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get endSeries => 'Seri';
 
   @override
-  String get endNewRecord => 'Yeni cihaz rekoru';
+  String get endNewRecord => 'Yeni rekor';
 
   @override
   String get endRematch => 'Rövanş';

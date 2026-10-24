@@ -16,6 +16,8 @@ import '../engine/signal_palette.dart';
 import '../game/duel_board.dart';
 import '../game/half_pad.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/decor.dart';
+import '../theme/tap_burst.dart';
 
 enum HowStep { sit, wait, tap, early, decoy }
 
@@ -42,7 +44,8 @@ class HowToPlayScreen extends StatefulWidget {
   State<HowToPlayScreen> createState() => _HowToPlayScreenState();
 }
 
-class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProviderStateMixin {
+class _HowToPlayScreenState extends State<HowToPlayScreen>
+    with SingleTickerProviderStateMixin {
   late int _step = widget.initialStep;
   late final AnimationController _loop = AnimationController(
     vsync: this,
@@ -64,7 +67,9 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
 
   void _go(int step) {
     setState(() => _step = step);
-    if (widget.frozenProgress == null) _loop.forward(from: 0).then((_) => _loop.repeat());
+    if (widget.frozenProgress == null) {
+      _loop.forward(from: 0).then((_) => _loop.repeat());
+    }
   }
 
   @override
@@ -73,7 +78,8 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context).textTheme;
     final match = services.settings.match;
-    final includeDecoy = widget.includeDecoyStep ?? match.rules.mode == DuelMode.targetColor;
+    final includeDecoy =
+        widget.includeDecoyStep ?? match.rules.mode == DuelMode.targetColor;
     final steps = [
       HowStep.sit,
       HowStep.wait,
@@ -93,7 +99,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
     };
     final (h1, h2) = match.resolvedHues;
 
-    return Scaffold(
+    return ThemedScaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -123,7 +129,9 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
                     child: Text(
                       l10n.howStepOf(index + 1, steps.length),
                       textAlign: TextAlign.center,
-                      style: theme.bodySmall!.copyWith(fontFeatures: AppFonts.tabular),
+                      style: theme.bodySmall!.copyWith(
+                        fontFeatures: AppFonts.tabular,
+                      ),
                     ),
                   ),
                 ],
@@ -131,7 +139,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppDimens.gapL),
+                padding: const EdgeInsets.symmetric(vertical: AppDimens.gapS),
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: _demoBoardSize.width / _demoBoardSize.height,
@@ -149,7 +157,9 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
                                   colorBlind: match.rules.colorBlind,
                                 ),
                           colorBlind: match.rules.colorBlind,
-                          reduceMotion: services.settings.reduceMotionFor(context),
+                          reduceMotion: services.settings.reduceMotionFor(
+                            context,
+                          ),
                         ),
                       ),
                     ),
@@ -158,72 +168,95 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> with SingleTickerProv
               ),
             ),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: AppDimens.maxContentWidth),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppDimens.page,
-                  0,
-                  AppDimens.page,
-                  AppDimens.gapL,
-                ),
-                child: Column(
-                  children: [
-                    Text(title, textAlign: TextAlign.center, style: theme.displayMedium),
-                    const SizedBox(height: AppDimens.gapS),
-                    SizedBox(
-                      height: AppType.body * AppType.bodyHeight * 2,
-                      child: Text(
-                        body,
-                        textAlign: TextAlign.center,
-                        style: theme.bodyLarge!.copyWith(color: AppColors.textMuted),
-                      ),
+              constraints: const BoxConstraints(
+                maxWidth: AppDimens.maxContentWidth,
+              ),
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final tight = c.maxWidth < 400;
+                  final short = AppLayout.short(
+                    MediaQuery.sizeOf(context).height,
+                  );
+                  final stack = tight || short;
+                  final pad = tight ? AppDimens.pageTight : AppDimens.page;
+                  final btnH = short
+                      ? AppDimens.buttonHeightSmall
+                      : AppDimens.buttonHeight;
+                  final skip = last ? l10n.howClose : l10n.howSkip;
+                  final next = last ? l10n.howPlayNow : l10n.howNext;
+                  final nextIcon = last
+                      ? Icons.play_arrow_rounded
+                      : Icons.arrow_forward_rounded;
+                  void onSkip() => Navigator.of(context).maybePop();
+                  void onNext() {
+                    if (last) {
+                      Navigator.of(
+                        context,
+                      ).pushReplacementNamed(AppRoutes.setup);
+                    } else {
+                      _go(index + 1);
+                    }
+                  }
+
+                  Widget skipBtn() => AppButton.secondary(
+                    label: skip,
+                    height: btnH,
+                    onPressed: onSkip,
+                  );
+                  Widget nextBtn() => AppButton(
+                    label: next,
+                    icon: nextIcon,
+                    height: btnH,
+                    onPressed: onNext,
+                  );
+
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      pad,
+                      0,
+                      pad,
+                      AppDimens.gapM,
                     ),
-                    const SizedBox(height: AppDimens.gapM),
-                    _StepDots(count: steps.length, index: index),
-                    const SizedBox(height: AppDimens.gapL),
-                    if (!last)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppButton.secondary(
-                              label: l10n.howSkip,
-                              onPressed: () => Navigator.of(context).maybePop(),
-                            ),
+                    child: Column(
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            title,
+                            textAlign: TextAlign.center,
+                            style: theme.displayMedium,
                           ),
-                          const SizedBox(width: AppDimens.gapM),
-                          Expanded(
-                            flex: 2,
-                            child: AppButton(
-                              label: l10n.howNext,
-                              icon: Icons.arrow_forward_rounded,
-                              onPressed: () => _go(index + 1),
-                            ),
+                        ),
+                        const SizedBox(height: AppDimens.gapS),
+                        Text(
+                          body,
+                          textAlign: TextAlign.center,
+                          maxLines: tight ? 4 : 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.bodyLarge!.copyWith(
+                            color: AppColors.textMuted,
+                            fontSize: tight ? 14 : 16,
                           ),
-                        ],
-                      )
-                    else
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppButton.secondary(
-                              label: l10n.howClose,
-                              onPressed: () => Navigator.of(context).maybePop(),
-                            ),
+                        ),
+                        const SizedBox(height: AppDimens.gapS),
+                        _StepDots(count: steps.length, index: index),
+                        const SizedBox(height: AppDimens.gapM),
+                        if (stack) ...[
+                          nextBtn(),
+                          const SizedBox(height: AppDimens.gapS),
+                          skipBtn(),
+                        ] else
+                          Row(
+                            children: [
+                              Expanded(child: skipBtn()),
+                              const SizedBox(width: AppDimens.gapS),
+                              Expanded(flex: 2, child: nextBtn()),
+                            ],
                           ),
-                          const SizedBox(width: AppDimens.gapM),
-                          Expanded(
-                            flex: 2,
-                            child: AppButton(
-                              label: l10n.howPlayNow,
-                              icon: Icons.play_arrow_rounded,
-                              onPressed: () =>
-                                  Navigator.of(context).pushReplacementNamed(AppRoutes.setup),
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -244,10 +277,15 @@ class _DemoFrame extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimens.demoFrameRadius),
-        border: Border.all(color: AppColors.stroke, width: AppDimens.demoFrameBorder),
+        border: Border.all(
+          color: AppColors.stroke,
+          width: AppDimens.demoFrameBorder,
+        ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimens.demoFrameRadius - AppDimens.demoFrameBorder),
+        borderRadius: BorderRadius.circular(
+          AppDimens.demoFrameRadius - AppDimens.demoFrameBorder,
+        ),
         child: FittedBox(
           child: SizedBox.fromSize(size: _demoBoardSize, child: child),
         ),
@@ -301,7 +339,8 @@ class _Demo extends StatelessWidget {
       colorBlind: colorBlind,
     );
 
-    DuelState waiting(DuelSettings s) => DuelState(phase: DuelPhase.waiting, settings: s, round: 1);
+    DuelState waiting(DuelSettings s) =>
+        DuelState(phase: DuelPhase.waiting, settings: s, round: 1);
     DuelState signal(DuelSettings s) => DuelState(
       phase: DuelPhase.signal,
       settings: s,
@@ -335,7 +374,8 @@ class _Demo extends StatelessWidget {
         state = DuelState(phase: DuelPhase.ready, settings: classic);
         highlight = t < _sitHalf ? Player.p1 : Player.p2;
         hand = highlight;
-        pressed = (t % _sitHalf) > _sitPressFrom && (t % _sitHalf) < _sitPressTo;
+        pressed =
+            (t % _sitHalf) > _sitPressFrom && (t % _sitHalf) < _sitPressTo;
         labels = [
           HalfResult(
             label: names[0],
@@ -383,8 +423,11 @@ class _Demo extends StatelessWidget {
           colorBlind: colorBlind,
         ).first;
         if (t >= _decoyFrom && t < _decoyTo) {
-          state = waiting(targetRules)
-              .copyWith(phase: DuelPhase.decoy, orbColor: decoy, orbShape: SignalShape.triangle);
+          state = waiting(targetRules).copyWith(
+            phase: DuelPhase.decoy,
+            orbColor: decoy,
+            orbShape: SignalShape.triangle,
+          );
         } else if (t < _targetAt) {
           state = waiting(targetRules);
         } else if (t < _targetScoredAt) {
@@ -408,6 +451,20 @@ class _Demo extends StatelessWidget {
           shakeTriggers: [shake, 0],
           highlight: highlight,
           labelOverride: labels,
+          frozenBursts: pressed
+              ? [
+                  (
+                    hand,
+                    TapBurstSpec(
+                      dx: 0.72,
+                      dy: 0.62,
+                      progress: 0.4,
+                      winning: step == HowStep.tap,
+                      player: hand,
+                    ),
+                  ),
+                ]
+              : const [],
         ),
         _Hand(player: hand, pressed: pressed, t: t, reduceMotion: reduceMotion),
       ],
@@ -436,10 +493,13 @@ class _Hand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final y = player == Player.p1 ? _p1Y : _p2Y;
-    final bob = reduceMotion || pressed ? 0.0 : math.sin(t * math.pi * 4) * _bob;
+    final bob = reduceMotion || pressed
+        ? 0.0
+        : math.sin(t * math.pi * 4) * _bob;
     final size = AppDimens.demoHand * 2;
     return Positioned(
-      left: _demoBoardSize.width * (player == Player.p1 ? _x : 1 - _x) - size / 2,
+      left:
+          _demoBoardSize.width * (player == Player.p1 ? _x : 1 - _x) - size / 2,
       top: _demoBoardSize.height * y - size / 2 + bob,
       width: size,
       height: size,
@@ -464,7 +524,7 @@ class _Hand extends StatelessWidget {
                 Icons.touch_app_rounded,
                 size: size * 0.7,
                 color: AppColors.text,
-                shadows: const [Shadow(color: AppColors.background, blurRadius: 16)],
+                shadows: [Shadow(color: AppColors.background, blurRadius: 16)],
               ),
             ),
           ],

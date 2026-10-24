@@ -1,0 +1,52 @@
+{
+  "en-US": {
+    "title": "Reaction Rivals: 2P Duel",
+    "shortDescription": "Wait for the color, tap first. Two-player reflex duel on one phone.",
+    "fullDescription": "Reaction Rivals is a two-player reflex duel on one phone.\n\nSit face to face. When the center turns the target color, tap first. Tap too early and you lose the round. First to the target score wins.\n\nHOW TO PLAY\n• Put the phone between you. Each player taps their own half.\n• Wait while the center says WAIT.\n• When it turns green and says GO!, the first tap wins the point.\n• Tap too early and the point goes to your rival.\n\nGAME MODES\n• Classic — wait for green, then tap.\n• Target Color — tap only the color you picked. Trap colors can appear.\n• Color-blind mode adds shapes so color is not the only cue.\n\nFEATURES\n• Local 2 player reaction game on one device. No account.\n• Best reaction time stays on the phone.\n• Play offline. Ads only on the home screen and after a match, never during play.\n• 10 languages in Settings.\n\nMade by ARU SOFT.\nDownload Reaction Rivals and start your next reflex duel."
+  },
+  "es-419": {
+    "title": "Reaction Rivals: Reflejos",
+    "shortDescription": "Espera el color, toca primero. Duelo de reflejos 2 jugadores en un móvil.",
+    "fullDescription": "Reaction Rivals es un duelo de reflejos para 2 jugadores en un solo teléfono.\n\nSiéntense frente a frente. Cuando el centro cambie al color objetivo, toca primero. Si tocas demasiado pronto, pierdes la ronda. Gana quien llegue primero a la puntuación objetivo.\n\nCÓMO JUGAR\n• Pon el teléfono en medio. Cada jugador toca su mitad.\n• Espera mientras el centro dice WAIT.\n• Cuando se pone verde y dice GO!, el primer toque gana el punto.\n• Tocar demasiado pronto da el punto al rival.\n\nMODOS\n• Clásico — espera el verde y toca.\n• Color objetivo — toca solo el color que elegiste. Pueden aparecer colores trampa.\n• El modo daltónico añade formas para no depender solo del color.\n\nFUNCIONES\n• Juego de reacción local de 2 jugadores en un dispositivo. Sin cuenta.\n• El mejor tiempo de reacción se queda en el teléfono.\n• Juega sin conexión. Anuncios solo en inicio y al terminar el partido, nunca durante el juego.\n• 10 idiomas en Ajustes.\n\nHecho por ARU SOFT.\nDescarga Reaction Rivals y empieza tu próximo duelo de reflejos."
+  },
+  "pt-BR": {
+    "title": "Reaction Rivals: Reflexo",
+    "shortDescription": "Espere a cor, toque primeiro. Duelo de reflexo 2 jogadores no mesmo celular.",
+    "fullDescription": "Reaction Rivals é um duelo de reflexo para 2 jogadores no mesmo celular.\n\nSentem-se frente a frente. Quando o centro virar a cor alvo, toque primeiro. Toque cedo demais e perde a rodada. Quem chegar primeiro à pontuação alvo vence.\n\nCOMO JOGAR\n• Coloque o celular no meio. Cada jogador toca o próprio lado.\n• Espere enquanto o centro diz WAIT.\n• Quando ficar verde e disser GO!, o primeiro toque ganha o ponto.\n• Tocar cedo demais entrega o ponto ao rival.\n\nMODOS\n• Clássico — espere o verde e toque.\n• Cor alvo — toque só na cor que você escolheu. Cores armadilha podem aparecer.\n• O modo daltônico adiciona formas para a cor não ser a única pista.\n\nRECURSOS\n• Jogo de reação local 2 jogadores em um aparelho. Sem conta.\n• O melhor tempo de reação fica no celular.\n• Jogue offline. Anúncios só na tela inicial e depois da partida, nunca durante o jogo.\n• 10 idiomas em Configurações.\n\nFeito pela ARU SOFT.\nBaixe o Reaction Rivals e comece o próximo duelo de reflexo."
+  },
+  "zh-CN": {
+    "title": "Reaction Rivals：反应对决",
+    "shortDescription": "等颜色变了再点。一部手机上的双人反应对决。",
+    "fullDescription": "Reaction Rivals 是一款同屏双人反应对决游戏。\n\n面对面坐下。中心变成目标颜色时，谁先点谁得分。点太早会输掉这一轮。先达到目标分数者获胜。\n\n玩法\n• 把手机放在中间。每人点自己的半边。\n• 中心显示 WAIT 时不要点。\n• 变成绿色并显示 GO! 时，先点的人得分。\n• 过早点，分数给对手。\n\n模式\n• 经典 — 等变绿再点。\n• 目标颜色 — 只在你选的颜色出现时点。可能出现陷阱颜色。\n• 色盲模式会加上形状，不只靠颜色判断。\n\n特色\n• 单设备本地双人反应游戏。无需账号。\n• 最佳反应时间保存在手机上。\n• 可离线游玩。广告只在主页和比赛结束后出现，对局中没有。\n• 设置中有 10 种语言。\n\n由 ARU SOFT 制作。\n下载 Reaction Rivals，开始下一场反应对决。"
+  },
+  "ja-JP": {
+    "title": "Reaction Rivals：反射対決",
+    "shortDescription": "色を待って先にタップ。1台のスマホで2人反射デュエル。",
+    "fullDescription": "Reaction Rivals は、1台のスマホで遊ぶ2人反射デュエルです。\n\n向かい合って座ります。中央が目標の色に変わったら先にタップ。早すぎるとそのラウンドは負け。目標スコアに先に達した方が勝ちです。\n\n遊び方\n• スマホを間に置きます。各自が自分の半分をタップ。\n• 中央が WAIT の間は触らない。\n• 緑になって GO! と出たら、先にタップした方が得点。\n• 早押しすると点数は相手へ。\n\nモード\n• クラシック — 緑を待ってタップ。\n• ターゲットカラー — 選んだ色のときだけタップ。トラップ色が出ることがあります。\n• 色覚サポートは形を足すので、色だけに頼りません。\n\n特徴\n• 1台でローカル2人の反応ゲーム。アカウント不要。\n• ベスト反応時間は端末に残ります。\n• オフラインで遊べます。広告はホームと試合後のみ。プレイ中はありません。\n• 設定で10言語。\n\nARU SOFT 制作。\nReaction Rivals をダウンロードして、次の反射デュエルを始めよう。"
+  },
+  "de-DE": {
+    "title": "Reaction Rivals: Reflex",
+    "shortDescription": "Warte auf die Farbe, tippe zuerst. 2-Spieler-Reflexduell auf einem Handy.",
+    "fullDescription": "Reaction Rivals ist ein 2-Spieler-Reflexduell auf einem Handy.\n\nSetzt euch gegenüber. Wenn die Mitte die Zielfarbe wird, tippe zuerst. Zu früh tippen verliert die Runde. Wer zuerst die Zielpunktzahl erreicht, gewinnt.\n\nSO SPIELT MAN\n• Legt das Handy in die Mitte. Jeder tippt seine Hälfte.\n• Warten, solange die Mitte WAIT zeigt.\n• Wird sie grün und zeigt GO!, gewinnt der erste Tipp den Punkt.\n• Zu früh tippen gibt den Punkt dem Rivalen.\n\nMODI\n• Klassisch — auf Grün warten, dann tippen.\n• Zielfarbe — nur bei der gewählten Farbe tippen. Es können Fallenfarben kommen.\n• Der Farbenblind-Modus ergänzt Formen, damit Farbe nicht der einzige Hinweis ist.\n\nFEATURES\n• Lokales 2-Spieler-Reaktionsspiel auf einem Gerät. Kein Konto.\n• Die beste Reaktionszeit bleibt auf dem Handy.\n• Offline spielbar. Werbung nur auf dem Startbildschirm und nach dem Match, nie während des Spiels.\n• 10 Sprachen in den Einstellungen.\n\nGemacht von ARU SOFT.\nLade Reaction Rivals und starte dein nächstes Reflexduell."
+  },
+  "fr-FR": {
+    "title": "Reaction Rivals: Réflexe",
+    "shortDescription": "Attendez la couleur, tapez en premier. Duel de réflexe à 2 sur un téléphone.",
+    "fullDescription": "Reaction Rivals est un duel de réflexe à 2 joueurs sur un seul téléphone.\n\nAsseyez-vous face à face. Quand le centre passe à la couleur cible, tapez en premier. Trop tôt, vous perdez la manche. Le premier à l’objectif de points gagne.\n\nCOMMENT JOUER\n• Placez le téléphone au milieu. Chaque joueur tape sa moitié.\n• Attendez tant que le centre affiche WAIT.\n• Quand il devient vert et affiche GO!, le premier tap gagne le point.\n• Taper trop tôt donne le point à l’adversaire.\n\nMODES\n• Classique — attendez le vert, puis tapez.\n• Couleur cible — tapez seulement la couleur choisie. Des couleurs piège peuvent apparaître.\n• Le mode daltonien ajoute des formes pour ne pas dépendre que de la couleur.\n\nFONCTIONS\n• Jeu de réaction local 2 joueurs sur un appareil. Pas de compte.\n• Le meilleur temps de réaction reste sur le téléphone.\n• Jouez hors ligne. Pubs seulement sur l’accueil et après le match, jamais pendant le jeu.\n• 10 langues dans Réglages.\n\nCréé par ARU SOFT.\nTéléchargez Reaction Rivals et lancez votre prochain duel de réflexe."
+  },
+  "ko-KR": {
+    "title": "Reaction Rivals: 반사 대결",
+    "shortDescription": "색이 바뀌면 먼저 탭. 한 폰에서 하는 2인 반사 대결.",
+    "fullDescription": "Reaction Rivals는 한 대의 폰에서 하는 2인 반사 대결입니다.\n\n마주 앉아 플레이하세요. 중앙이 목표 색으로 바뀌면 먼저 탭하세요. 너무 일찍 누르면 그 라운드는 집니다. 목표 점수에 먼저 도달한 쪽이 이깁니다.\n\n플레이 방법\n• 폰을 가운데 두세요. 각자 자기 쪽을 탭합니다.\n• 중앙에 WAIT가 보일 때는 누르지 마세요.\n• 초록으로 바뀌고 GO!가 나오면 먼저 탭한 쪽이 득점합니다.\n• 너무 일찍 누르면 점수는 상대에게 갑니다.\n\n모드\n• 클래식 — 초록을 기다렸다가 탭.\n• 목표 색 — 고른 색일 때만 탭. 함정 색이 나올 수 있습니다.\n• 색각 모드는 모양을 더해 색만으로 판단하지 않습니다.\n\n기능\n• 한 기기에서 로컬 2인 반응 게임. 계정 불필요.\n• 최고 반응 시간은 폰에 저장됩니다.\n• 오프라인 플레이. 광고는 홈과 경기 후에만, 플레이 중에는 없습니다.\n• 설정에서 10개 언어.\n\nARU SOFT 제작.\nReaction Rivals를 다운로드하고 다음 반사 대결을 시작하세요."
+  },
+  "it-IT": {
+    "title": "Reaction Rivals: Riflessi",
+    "shortDescription": "Aspetta il colore, tocca per primo. Duello di riflessi a 2 su un telefono.",
+    "fullDescription": "Reaction Rivals è un duello di riflessi a 2 sullo stesso telefono.\n\nSedetevi uno di fronte all’altro. Quando il centro diventa il colore obiettivo, tocca per primo. Toccare troppo presto fa perdere il round. Vince chi arriva prima al punteggio obiettivo.\n\nCOME SI GIOCA\n• Metti il telefono in mezzo. Ognuno tocca la propria metà.\n• Aspetta mentre il centro dice WAIT.\n• Quando diventa verde e dice GO!, il primo tap vince il punto.\n• Toccare troppo presto dà il punto al rivale.\n\nMODALITÀ\n• Classica — aspetta il verde, poi tocca.\n• Colore obiettivo — tocca solo il colore scelto. Possono comparire colori trappola.\n• La modalità per daltonici aggiunge forme, così il colore non è l’unico indizio.\n\nFUNZIONI\n• Gioco di reazione locale a 2 su un dispositivo. Nessun account.\n• Il miglior tempo di reazione resta sul telefono.\n• Gioca offline. Annunci solo in home e a fine partita, mai durante il gioco.\n• 10 lingue in Impostazioni.\n\nFatto da ARU SOFT.\nScarica Reaction Rivals e inizia il prossimo duello di riflessi."
+  },
+  "tr-TR": {
+    "title": "Reaction Rivals: Refleks",
+    "shortDescription": "Rengi bekle, ilk sen bas. Tek telefonda 2 kişilik refleks düellosu.",
+    "fullDescription": "Reaction Rivals, tek telefonda 2 kişilik bir refleks düellosu.\n\nYüz yüze oturun. Ortadaki işaret hedef renge dönünce ilk basan turu alır. Erken basarsan turu kaybedersin. Hedef skora ilk ulaşan maçı kazanır.\n\nNASIL OYNANIR\n• Telefonu aranıza koyun. Her oyuncu kendi yarısına basar.\n• Ortada BEKLE yazarken dokunmayın.\n• Yeşile dönüp BAS! deyince ilk basan puanı alır.\n• Erken basarsan puan rakibe gider.\n\nOYUN MODLARI\n• Klasik — yeşili bekle, sonra bas.\n• Hedef Renk — sadece seçtiğin renkte bas. Tuzak renkler gelebilir.\n• Renk körü modu şekil ekler; renk tek ipucu değildir.\n\nÖZELLİKLER\n• Tek cihazda 2 kişilik yerel refleks oyunu. Hesap yok.\n• En iyi reaksiyon süresi telefonda kalır.\n• Çevrimdışı oynanır. Reklam yalnızca ana sayfada ve maç sonunda; oyun sırasında yok.\n• Ayarlarda 10 dil.\n\nARU SOFT.\nReaction Rivals’ı indir, sonraki refleks düellosuna başla."
+  }
+}

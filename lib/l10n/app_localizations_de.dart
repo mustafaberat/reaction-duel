@@ -10,14 +10,14 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'Reaction Duel';
+  String get appTitle => 'Reaction Rivals';
 
   @override
-  String get homeTagline => 'Wait for the color. Tap first.';
+  String get homeTagline => 'Warte auf die Farbe. Tippe zuerst.';
 
   @override
   String homeRecord(int ms) {
-    return 'Best $ms ms';
+    return 'Beste $ms ms';
   }
 
   @override
@@ -25,64 +25,64 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count matches',
-      one: '1 match',
+      other: '$count Spiele',
+      one: '1 Spiel',
     );
     return '$_temp0';
   }
 
   @override
-  String get play => 'Play';
+  String get play => 'Spielen';
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Einstellungen';
 
   @override
-  String get howToPlay => 'How to play';
+  String get howToPlay => 'So spielt man';
 
   @override
-  String get back => 'Back';
+  String get back => 'Zurück';
 
   @override
-  String get setupTitle => 'Match setup';
+  String get setupTitle => 'Spielstart';
 
   @override
-  String get setupMode => 'Mode';
+  String get setupMode => 'Modus';
 
   @override
-  String get modeClassic => 'Classic';
+  String get modeClassic => 'Klassisch';
 
   @override
-  String get modeTarget => 'Target Color';
+  String get modeTarget => 'Zielfarbe';
 
   @override
   String get modeClassicHint =>
-      'Tap the moment the center says GO! and turns green.';
+      'Tippe, sobald die Mitte LOS! sagt und grün wird.';
 
   @override
   String get modeTargetHint =>
-      'Tap only on your color, shown with the ● shape. Other colors and shapes are traps.';
+      'Tippe nur bei deiner Farbe, dem ●. Andere Farben und Formen sind Fallen.';
 
   @override
-  String get setupTargetColor => 'Target color';
+  String get setupTargetColor => 'Zielfarbe';
 
   @override
-  String get setupColorBlindNote => 'Color-blind palette · shapes on';
+  String get setupColorBlindNote => 'Farbenblind-Palette · Formen an';
 
   @override
-  String get setupWinScore => 'Points to win';
+  String get setupWinScore => 'Punkte zum Sieg';
 
   @override
-  String get setupWait => 'Wait time';
+  String get setupWait => 'Wartezeit';
 
   @override
-  String get waitShort => 'Short';
+  String get waitShort => 'Kurz';
 
   @override
   String get waitNormal => 'Normal';
 
   @override
-  String get waitLong => 'Long';
+  String get waitLong => 'Lang';
 
   @override
   String secondsRange(String min, String max) {
@@ -90,43 +90,43 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get setupPenalty => 'Early tap penalty';
+  String get setupPenalty => 'Strafe bei Frühstart';
 
   @override
-  String get penaltyOpponent => 'Rival +1';
+  String get penaltyOpponent => 'Rivale +1';
 
   @override
-  String get penaltySelf => 'Self −1';
+  String get penaltySelf => 'Selbst −1';
 
   @override
-  String get penaltyRound => 'Round only';
+  String get penaltyRound => 'Nur Runde';
 
   @override
-  String get setupGuessGuard => 'Anticipation guard';
+  String get setupGuessGuard => 'Rateschutz';
 
   @override
-  String get setupGuessGuardHint => 'Taps under 80 ms count as a guess.';
+  String get setupGuessGuardHint => 'Tipps unter 80 ms gelten als Rateversuch.';
 
   @override
-  String get setupPlayers => 'Players';
+  String get setupPlayers => 'Spieler';
 
   @override
-  String get player1 => 'Player 1';
+  String get player1 => 'Spieler 1';
 
   @override
-  String get player2 => 'Player 2';
+  String get player2 => 'Spieler 2';
 
   @override
   String get start => 'Start';
 
   @override
-  String get colorGreen => 'Green';
+  String get colorGreen => 'Grün';
 
   @override
-  String get colorBlue => 'Blue';
+  String get colorBlue => 'Blau';
 
   @override
-  String get colorYellow => 'Yellow';
+  String get colorYellow => 'Gelb';
 
   @override
   String get colorOrange => 'Orange';
@@ -135,31 +135,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get colorPink => 'Pink';
 
   @override
-  String get colorPurple => 'Purple';
+  String get colorPurple => 'Lila';
 
   @override
-  String get colorWhite => 'White';
+  String get colorWhite => 'Weiß';
 
   @override
-  String get colorSky => 'Sky';
+  String get colorSky => 'Himmel';
 
   @override
-  String get duelEarly => 'TOO EARLY!';
+  String get duelEarly => 'ZU FRÜH!';
 
   @override
-  String get duelGuess => 'GUESS!';
+  String get duelGuess => 'GERATEN!';
 
   @override
-  String get duelDecoy => 'DECOY!';
+  String get duelDecoy => 'FALLE!';
 
   @override
-  String get duelTie => 'Tie';
+  String get duelTie => 'Unentschieden';
 
   @override
-  String get duelTieSub => 'Replay the round';
+  String get duelTieSub => 'Runde nochmal';
 
   @override
-  String get duelNoContest => 'No one tapped';
+  String get duelNoContest => 'Niemand hat getippt';
 
   @override
   String get duelPlusOne => '+1';
@@ -168,7 +168,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get duelMinusOne => '−1';
 
   @override
-  String get duelRoundLost => 'Round lost';
+  String get duelRoundLost => 'Runde verloren';
 
   @override
   String duelMs(int ms) {
@@ -179,162 +179,161 @@ class AppLocalizationsDe extends AppLocalizations {
   String get duelNoTime => '—';
 
   @override
-  String get duelTarget => 'Target';
+  String get duelTarget => 'Ziel';
 
   @override
-  String get duelCoach => 'Don\'t tap on WAIT · Tap on GO!';
+  String get duelCoach => 'Bei WARTE nicht tippen · Bei LOS! tippen';
 
   @override
-  String get duelWait => 'WAIT';
+  String get duelWait => 'WARTE';
 
   @override
-  String get duelGo => 'GO!';
+  String get duelGo => 'LOS!';
 
   @override
-  String get duelWinner => 'WINNER';
+  String get duelWinner => 'SIEG';
 
   @override
-  String get duelTooSlow => 'TOO SLOW';
+  String get duelTooSlow => 'ZU LANGSAM';
 
   @override
-  String get duelRivalFoul => 'Rival tapped early';
+  String get duelRivalFoul => 'Rivale zu früh';
 
   @override
-  String get duelGuessSub => 'Faster than 80 ms';
+  String get duelGuessSub => 'Schneller als 80 ms';
 
   @override
   String get duelPause => 'Pause';
 
   @override
-  String get pauseTitle => 'Paused';
+  String get pauseTitle => 'Pause';
 
   @override
-  String get pauseResume => 'Resume';
+  String get pauseResume => 'Weiter';
 
   @override
-  String get pauseRestart => 'Restart';
+  String get pauseRestart => 'Neu starten';
 
   @override
-  String get home => 'Home';
+  String get home => 'Start';
 
   @override
   String endWinner(String name) {
-    return '$name wins';
+    return '$name gewinnt';
   }
 
   @override
-  String get endBest => 'Best';
+  String get endBest => 'Beste';
 
   @override
-  String get endAverage => 'Average';
+  String get endAverage => 'Schnitt';
 
   @override
-  String get endFouls => 'Fouls';
+  String get endFouls => 'Fehler';
 
   @override
-  String get endSeries => 'Series';
+  String get endSeries => 'Serie';
 
   @override
-  String get endNewRecord => 'New device record';
+  String get endNewRecord => 'Neuer Rekord';
 
   @override
-  String get endRematch => 'Rematch';
+  String get endRematch => 'Revanche';
 
   @override
-  String get endChangeSettings => 'Change settings';
+  String get endChangeSettings => 'Einstellungen';
 
   @override
-  String get settingsGame => 'Game';
+  String get settingsGame => 'Spiel';
 
   @override
-  String get settingsGeneral => 'General';
+  String get settingsGeneral => 'Allgemein';
 
   @override
-  String get settingsAbout => 'About';
+  String get settingsAbout => 'Info';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get settingsLanguage => 'Sprache';
 
   @override
-  String get settingsLanguageSystem => 'System default';
+  String get settingsLanguageSystem => 'Systemsprache';
 
   @override
-  String get settingsColorBlind => 'Color-blind mode';
+  String get settingsColorBlind => 'Farbenblind-Modus';
 
   @override
   String get settingsColorBlindHint =>
-      'Color-blind safe palette. Target Color always shows shapes.';
+      'Sichere Palette. Zielfarbe zeigt immer Formen.';
 
   @override
-  String get settingsReduceMotion => 'Reduce motion';
+  String get settingsReduceMotion => 'Weniger Bewegung';
 
   @override
-  String get settingsAccessibility => 'Accessibility';
+  String get settingsAccessibility => 'Barrierefreiheit';
 
   @override
   String get motionSystem => 'System';
 
   @override
-  String get motionOn => 'On';
+  String get motionOn => 'An';
 
   @override
-  String get motionOff => 'Off';
+  String get motionOff => 'Aus';
 
   @override
-  String get settingsShowTips => 'Show first-game tips again';
+  String get settingsShowTips => 'Erste-Spiel-Tipps wieder zeigen';
 
   @override
-  String get settingsTipsReset => 'Tips will show in your next match.';
+  String get settingsTipsReset => 'Tipps erscheinen im nächsten Spiel.';
 
   @override
-  String get settingsPrivacy => 'Privacy policy';
+  String get settingsPrivacy => 'Datenschutz';
 
   @override
   String get settingsVersion => 'Version';
 
   @override
-  String get howStep1Title => 'Sit face to face';
+  String get howStep1Title => 'Gegenüber setzen';
 
   @override
-  String get howStep1Body =>
-      'Put the phone between you. Each player taps their own half.';
+  String get howStep1Body => 'Handy in die Mitte. Jeder tippt seine Hälfte.';
 
   @override
-  String get howStep2Title => 'Wait';
+  String get howStep2Title => 'Warten';
 
   @override
-  String get howStep2Body => 'Don\'t touch while the center says WAIT.';
+  String get howStep2Body => 'Nicht tippen, solange die Mitte WARTE zeigt.';
 
   @override
-  String get howStep3Title => 'GO! means tap';
+  String get howStep3Title => 'LOS! heißt tippen';
 
   @override
-  String get howStep3Body => 'When GO! appears, the first tap wins the point.';
+  String get howStep3Body => 'Bei LOS! gewinnt der erste Tipp den Punkt.';
 
   @override
-  String get howStep4Title => 'Don\'t jump the gun';
+  String get howStep4Title => 'Nicht zu früh';
 
   @override
-  String get howStep4Body => 'Tap too early and the point goes to your rival.';
+  String get howStep4Body => 'Zu früh tippen gibt den Punkt dem Rivalen.';
 
   @override
-  String get howStep5Title => 'Decoy colors';
+  String get howStep5Title => 'Fallenfarben';
 
   @override
   String get howStep5Body =>
-      'Only tap on your color — the ● shape. Other shapes are traps.';
+      'Nur bei deiner Farbe tippen — dem ●. Andere Formen sind Fallen.';
 
   @override
-  String get howNext => 'Next';
+  String get howNext => 'Weiter';
 
   @override
-  String get howSkip => 'Skip';
+  String get howSkip => 'Überspringen';
 
   @override
-  String get howPlayNow => 'Play now';
+  String get howPlayNow => 'Jetzt spielen';
 
   @override
-  String get howClose => 'Close';
+  String get howClose => 'Schließen';
 
   @override
   String howStepOf(int step, int total) {

@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../config/tokens.dart';
+import '../theme/decor.dart';
 
 class SectionLabel extends StatelessWidget {
   const SectionLabel(this.text, {this.trailing, super.key});
@@ -40,7 +41,7 @@ class GroupCard extends StatelessWidget {
     for (var i = 0; i < children.length; i++) {
       if (i > 0) {
         items.add(
-          const Divider(
+          Divider(
             height: AppDimens.hairline,
             thickness: AppDimens.hairline,
             color: AppColors.hairline,
@@ -54,10 +55,11 @@ class GroupCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-        border: Border.all(color: AppColors.stroke, width: AppDimens.hairline),
+        border: Border.all(color: AppColors.stroke, width: AppDimens.cardOutline),
+        boxShadow: AppShadows.card,
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(mainAxisSize: MainAxisSize.min, children: items),
+      child: ThemeCardChrome(child: Column(mainAxisSize: MainAxisSize.min, children: items)),
     );
   }
 }

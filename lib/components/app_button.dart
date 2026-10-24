@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../config/tokens.dart';
+import '../theme/button_chrome.dart';
 
 enum AppButtonKind { primary, secondary, ghost }
 
@@ -15,6 +16,13 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.expand = true,
     this.height = AppDimens.buttonHeight,
+    this.maxLines = 1,
+    this.compact = false,
+    this.fontSize,
+    this.foreground,
+    this.borderColor,
+    this.radius,
+    this.iconSize,
     super.key,
   });
 
@@ -24,6 +32,13 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.expand = true,
     this.height = AppDimens.buttonHeight,
+    this.maxLines = 1,
+    this.compact = false,
+    this.fontSize,
+    this.foreground,
+    this.borderColor,
+    this.radius,
+    this.iconSize,
     super.key,
   }) : kind = AppButtonKind.secondary;
 
@@ -33,6 +48,13 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.expand = false,
     this.height = AppDimens.buttonHeightSmall,
+    this.maxLines = 1,
+    this.compact = false,
+    this.fontSize,
+    this.foreground,
+    this.borderColor,
+    this.radius,
+    this.iconSize,
     super.key,
   }) : kind = AppButtonKind.ghost;
 
@@ -42,59 +64,127 @@ class AppButton extends StatelessWidget {
   final IconData? icon;
   final bool expand;
   final double height;
+  final int maxLines;
+  final bool compact;
+  final double? fontSize;
+  final Color? foreground;
+  final Color? borderColor;
+  final double? radius;
+  final double? iconSize;
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg, border) = switch (kind) {
-      AppButtonKind.primary => (AppColors.accent, AppColors.onAccent, AppColors.transparent),
-      AppButtonKind.secondary => (AppColors.surfaceHigh, AppColors.text, AppColors.stroke),
-      AppButtonKind.ghost => (AppColors.transparent, AppColors.textMuted, AppColors.transparent),
+    final outline = kind == AppButtonKind.ghost
+        ? AppColors.transparent
+        : (kind == AppButtonKind.primary
+              ? AppColors.onAccent.withValues(alpha: 0.2)
+              : AppColors.outline);
+    final (bg, tokenFg, tokenBorder) = switch (kind) {
+      AppButtonKind.primary => (AppColors.accent, AppColors.onAccent, outline),
+      AppButtonKind.secondary => (AppColors.surface, AppColors.text, outline),
+      AppButtonKind.ghost => (
+        AppColors.transparent,
+        AppColors.textMuted,
+        AppColors.transparent,
+      ),
     };
+    final fg = foreground ?? tokenFg;
+    final border = borderColor ?? tokenBorder;
+    final corner = radius ?? AppDimens.buttonRadius;
     final style = Theme.of(context).textTheme.labelLarge!.copyWith(
       color: fg,
-      fontWeight: kind == AppButtonKind.primary ? FontWeight.w700 : FontWeight.w600,
+      fontSize: fontSize ?? (compact ? AppType.caption : AppType.button),
+      height: compact ? 1.15 : null,
+      fontWeight: kind == AppButtonKind.primary
+          ? (fontSize != null ? FontWeight.w800 : FontWeight.w700)
+          : FontWeight.w600,
       letterSpacing: AppType.buttonTracking,
     );
+    final lines = compact ? 1 : maxLines;
 
     final content = Row(
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: AppDimens.icon, color: fg),
-          const SizedBox(width: AppDimens.gapS),
+          Icon(
+            icon,
+            size: iconSize ?? (compact ? AppDimens.iconSmall : AppDimens.icon),
+            color: fg,
+          ),
+          SizedBox(width: compact ? 6 : AppDimens.gapS),
         ],
         Flexible(
-          child: Text(label, style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
+          child: compact || fontSize != null
+              ? FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    style: style,
+                    maxLines: lines,
+                    textAlign: TextAlign.center,
+                    softWrap: lines > 1,
+                  ),
+                )
+              : Text(
+                  label,
+                  style: style,
+                  maxLines: lines,
+                  overflow: TextOverflow.ellipsis,
+                ),
         ),
       ],
     );
+
+    final shape = BorderRadius.circular(corner);
+    final button = Material(
+      color: bg,
+      elevation: 0,
+      shadowColor: AppColors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: shape,
+        side: BorderSide(
+          color: border,
+          width: kind == AppButtonKind.ghost ? 0 : AppDimens.buttonOutline,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: height),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: kind == AppButtonKind.ghost
+                  ? AppDimens.gapS
+                  : compact
+                  ? AppDimens.gapM
+                  : AppDimens.gapXl,
+            ),
+            child: Center(child: content),
+          ),
+        ),
+      ),
+    );
+
+    final framed = kind == AppButtonKind.ghost
+        ? SizedBox(
+            height: height,
+            width: expand ? double.infinity : null,
+            child: button,
+          )
+        : ThemedButtonFrame(
+            height: height,
+            expand: expand,
+            radius: corner,
+            child: button,
+          );
 
     return Semantics(
       button: true,
       label: label,
       excludeSemantics: true,
-      child: SizedBox(
-        height: height,
-        width: expand ? double.infinity : null,
-        child: Material(
-          color: bg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
-            side: BorderSide(color: border, width: AppDimens.hairline),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onPressed,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: kind == AppButtonKind.ghost ? AppDimens.gapS : AppDimens.gapXl,
-              ),
-              child: content,
-            ),
-          ),
-        ),
-      ),
+      child: framed,
     );
   }
 }
@@ -106,7 +196,7 @@ class AppIconButton extends StatelessWidget {
     required this.tooltip,
     this.size = AppDimens.iconButton,
     this.filled = true,
-    this.color = AppColors.text,
+    this.color,
     super.key,
   });
 
@@ -115,10 +205,11 @@ class AppIconButton extends StatelessWidget {
   final String tooltip;
   final double size;
   final bool filled;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final ink = color ?? AppColors.text;
     return Tooltip(
       message: tooltip,
       child: Semantics(
@@ -138,7 +229,7 @@ class AppIconButton extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onPressed,
-              child: Icon(icon, size: size * 0.48, color: color),
+              child: Icon(icon, size: size * 0.48, color: ink),
             ),
           ),
         ),

@@ -29,6 +29,7 @@ class DuelScreen extends StatefulWidget {
     this.driveTimers = true,
     this.showCoach,
     this.frozenBursts = const [],
+    this.frozenPauseProgress,
     super.key,
   });
 
@@ -45,6 +46,9 @@ class DuelScreen extends StatefulWidget {
 
   /// Capture-tool freeze of tap feedback (player + local 0–1 + progress).
   final List<(Player, TapBurstSpec)> frozenBursts;
+
+  /// Capture-tool freeze of the pause-card doze loop (0–1).
+  final double? frozenPauseProgress;
 
   @override
   State<DuelScreen> createState() => _DuelScreenState();
@@ -74,7 +78,8 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
       _clock = injected.clock;
     } else {
       _clock = MonotonicClock();
-      _engine = DuelEngine(clock: _clock, settings: widget.config.rules)..start();
+      _engine = DuelEngine(clock: _clock, settings: widget.config.rules)
+        ..start();
     }
     _lastPhase = _engine.state.phase;
     _lastRound = _engine.state.round;
@@ -105,12 +110,14 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
       if (s.phase == DuelPhase.signal) {
         _signalFrameTs = null;
         SchedulerBinding.instance.addPostFrameCallback((_) {
-          _signalFrameTs = SchedulerBinding.instance.currentSystemFrameTimeStamp;
+          _signalFrameTs =
+              SchedulerBinding.instance.currentSystemFrameTimeStamp;
         });
       }
       final result = s.lastResult;
       if (s.phase == DuelPhase.scored ||
-          (s.phase == DuelPhase.matchOver && result?.outcome == RoundOutcome.scored)) {
+          (s.phase == DuelPhase.matchOver &&
+              result?.outcome == RoundOutcome.scored)) {
         services.settings.setOnboardingDone(true);
       }
       if (result?.outcome == RoundOutcome.foul &&
@@ -164,10 +171,13 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
       final frame = _signalFrameTs;
       if (frame == null) {
         // Signal not on screen yet: the tap can't be a reaction to it.
-        if (s.phase == DuelPhase.signal) at = signalAt - const Duration(microseconds: 1);
+        if (s.phase == DuelPhase.signal) {
+          at = signalAt - const Duration(microseconds: 1);
+        }
       } else {
         final delta = event.timeStamp - frame;
-        final limit = const Duration(milliseconds: GameTiming.signalTimeoutMs) + _sanity;
+        final limit =
+            const Duration(milliseconds: GameTiming.signalTimeoutMs) + _sanity;
         if (delta > -_sanity && delta < limit) at = signalAt + delta;
       }
     }
@@ -242,12 +252,21 @@ class _DuelScreenState extends State<DuelScreen> with WidgetsBindingObserver {
                     ),
             ),
             if (s.phase == DuelPhase.paused)
-              PauseOverlay(onResume: _engine.resume, onRestart: _engine.start, onHome: _goHome),
+              PauseOverlay(
+                onResume: _engine.resume,
+                onRestart: _engine.start,
+                onHome: _goHome,
+                reduceMotion: reduceMotion,
+                frozenProgress: widget.frozenPauseProgress,
+              ),
             if (_showEnd && s.phase == DuelPhase.matchOver)
               MatchEndOverlay(
                 state: s,
                 names: names,
-                series: [services.stats.seriesOf(Player.p1), services.stats.seriesOf(Player.p2)],
+                series: [
+                  services.stats.seriesOf(Player.p1),
+                  services.stats.seriesOf(Player.p2),
+                ],
                 newRecord: _newRecord,
                 reduceMotion: reduceMotion,
                 onRematch: _engine.rematch,

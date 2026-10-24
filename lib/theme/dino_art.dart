@@ -23,8 +23,9 @@ CharacterMood moodFor(Player player, DuelState state) {
       return CharacterMood.ready;
     case DuelPhase.waiting:
     case DuelPhase.decoy:
-    case DuelPhase.paused:
       return CharacterMood.waiting;
+    case DuelPhase.paused:
+      return CharacterMood.sleepy;
     case DuelPhase.signal:
       return CharacterMood.pouncing;
     case DuelPhase.scored:
@@ -411,6 +412,7 @@ class _Face {
   const _Face({
     required this.mouth,
     this.happyEyes = false,
+    this.closedEyes = false,
     this.wideEyes = false,
     this.sadBrows = false,
     this.sweat = false,
@@ -422,6 +424,7 @@ class _Face {
 
   final _MouthKind mouth;
   final bool happyEyes;
+  final bool closedEyes;
   final bool wideEyes;
   final bool sadBrows;
   final bool sweat;
@@ -486,11 +489,32 @@ class _Face {
         hop: -2,
         tilt: -0.03,
       ),
+      CharacterMood.sleepy => const _Face(
+        mouth: _MouthKind.smile,
+        closedEyes: true,
+        hop: 3,
+        tilt: 0.03,
+      ),
     };
   }
 }
 
 void _dinoEye(Canvas canvas, Offset c, double r, _Face face) {
+  if (face.closedEyes) {
+    // Soft closed lid — a downward arc, never an angry inward brow.
+    canvas.drawPath(
+      Path()
+        ..moveTo(c.dx - r * 0.95, c.dy - r * 0.12)
+        ..quadraticBezierTo(
+          c.dx,
+          c.dy + r * 0.58,
+          c.dx + r * 0.95,
+          c.dy - r * 0.12,
+        ),
+      _stroke(3.6)..strokeCap = StrokeCap.round,
+    );
+    return;
+  }
   if (face.happyEyes) {
     canvas.drawPath(
       Path()
@@ -560,7 +584,12 @@ void _sweat(Canvas canvas, Offset tip) {
   const s = 16.0;
   final path = Path()
     ..moveTo(tip.dx, tip.dy)
-    ..quadraticBezierTo(tip.dx + s * 0.55, tip.dy + s * 0.55, tip.dx, tip.dy + s)
+    ..quadraticBezierTo(
+      tip.dx + s * 0.55,
+      tip.dy + s * 0.55,
+      tip.dx,
+      tip.dy + s,
+    )
     ..quadraticBezierTo(tip.dx - s * 0.55, tip.dy + s * 0.55, tip.dx, tip.dy)
     ..close();
   _fillStroke(canvas, path, const Color(0xFFB8E8FF), _stroke(2.6));

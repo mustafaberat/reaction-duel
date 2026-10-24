@@ -3,7 +3,7 @@
 /// Run: `flutter test tool/capture_kids_themes.dart`
 /// Out:
 ///   play/design-options/c/*.png — 375×667 logical @ dpr 2, Turkish
-///   play/design-options/small/*.png — 320×568 home, how-to, duel, match end
+///   play/design-options/small/*.png — 320×568 home, how-to, duel, pause, match end
 ///   play/locale-check/{lang}-NN.png — home, how-to, match end per locale
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 library;
@@ -217,7 +217,14 @@ Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
   await shot('08-duel-midtap', _duel(classicConfig, _Scene.midtap));
   await shot('09-duel-foul', _duel(classicConfig, _Scene.foul));
   await shot('10-duel-scored', _duel(classicConfig, _Scene.scored));
-  await shot('11-duel-pause', _duel(classicConfig, _Scene.paused));
+  await shot(
+    'pause-a',
+    _duel(classicConfig, _Scene.paused, pauseProgress: 0.12),
+  );
+  await shot(
+    'pause-b',
+    _duel(classicConfig, _Scene.paused, pauseProgress: 0.62),
+  );
 
   Future<void> matchEnd(_Scene scene, String name) async {
     final engine = _engineFor(classicConfig, scene);
@@ -271,6 +278,14 @@ Future<void> _captureSmall(WidgetTester tester, AppServices services) async {
   await shot('07-duel-go', _duel(classicConfig, _Scene.signal));
   await shot('09-duel-foul', _duel(classicConfig, _Scene.foul));
   await shot('10-duel-scored', _duel(classicConfig, _Scene.scored));
+  await shot(
+    'pause-a',
+    _duel(classicConfig, _Scene.paused, pauseProgress: 0.12),
+  );
+  await shot(
+    'pause-b',
+    _duel(classicConfig, _Scene.paused, pauseProgress: 0.62),
+  );
 
   Future<void> matchEnd(_Scene scene, String name) async {
     final engine = _engineFor(classicConfig, scene);
@@ -449,12 +464,18 @@ enum _Scene {
   coach,
 }
 
-Widget _duel(MatchConfig config, _Scene scene, {bool coach = false}) {
+Widget _duel(
+  MatchConfig config,
+  _Scene scene, {
+  bool coach = false,
+  double? pauseProgress,
+}) {
   return DuelScreen(
     config: config,
     engine: _engineFor(config, scene),
     driveTimers: false,
     showCoach: coach,
+    frozenPauseProgress: pauseProgress,
     frozenBursts: scene == _Scene.midtap
         ? const [
             (

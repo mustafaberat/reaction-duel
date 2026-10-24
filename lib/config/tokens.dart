@@ -16,6 +16,7 @@ enum CharacterMood {
   oops,
   surprised,
   nextTime,
+  sleepy,
 }
 
 class PlayerSwatch {

@@ -52,6 +52,7 @@ void main() {
   test('match-end loser mood is encouraging, not sad', () {
     expect(CharacterMood.values, contains(CharacterMood.nextTime));
     expect(CharacterMood.values, contains(CharacterMood.oops));
+    expect(CharacterMood.values, contains(CharacterMood.sleepy));
     expect(CharacterMood.values.map((m) => m.name), isNot(contains('sad')));
   });
 

@@ -153,7 +153,8 @@ void main() {
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
     await tester.pump(const Duration(milliseconds: 100));
     expect(engine.state.phase, DuelPhase.paused);
-    expect(find.text('Paused'), findsNWidgets(2));
+    expect(find.text('Paused'), findsOneWidget);
+    expect(find.byKey(const ValueKey('pause-card')), findsOneWidget);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
   });
 

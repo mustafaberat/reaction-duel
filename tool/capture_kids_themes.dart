@@ -3,7 +3,7 @@
 /// Run: `flutter test tool/capture_kids_themes.dart`
 /// Out:
 ///   play/design-options/c/*.png — 375×667 logical @ dpr 2, Turkish
-///   play/design-options/small/*.png — 320×568 home + match end
+///   play/design-options/small/*.png — 320×568 home, how-to, duel, match end
 ///   play/locale-check/{lang}-NN.png — home, how-to, match end per locale
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 library;
@@ -219,17 +219,22 @@ Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
   await shot('10-duel-scored', _duel(classicConfig, _Scene.scored));
   await shot('11-duel-pause', _duel(classicConfig, _Scene.paused));
 
-  final endEngine = _engineFor(classicConfig, _Scene.matchEnd);
-  await services.stats.recordMatch(endEngine.state);
-  await shot(
-    '12-match-end',
-    DuelScreen(
-      config: classicConfig,
-      engine: endEngine,
-      driveTimers: false,
-      showCoach: false,
-    ),
-  );
+  Future<void> matchEnd(_Scene scene, String name) async {
+    final engine = _engineFor(classicConfig, scene);
+    await services.stats.recordMatch(engine.state);
+    await shot(
+      name,
+      DuelScreen(
+        config: classicConfig,
+        engine: engine,
+        driveTimers: false,
+        showCoach: false,
+      ),
+    );
+  }
+
+  await matchEnd(_Scene.matchEnd, '12-match-end');
+  await matchEnd(_Scene.matchEndBlue, '12-match-end-p2');
 
   await services.settings.setMatch(targetConfig);
   await shot('13-target-setup', const MatchSetupScreen());
@@ -244,27 +249,45 @@ Future<void> _captureSmall(WidgetTester tester, AppServices services) async {
   const classicConfig = MatchConfig(p1Name: 'Deniz', p2Name: 'Mert');
   await services.settings.setMatch(classicConfig);
 
-  await _capture(
-    tester,
-    services,
-    '$_outSmall/01-home.png',
-    const HomeScreen(playLoopProgress: 0.84),
-    size: _tiny,
-  );
-  final endEngine = _engineFor(classicConfig, _Scene.matchEnd);
-  await services.stats.recordMatch(endEngine.state);
-  await _capture(
-    tester,
-    services,
-    '$_outSmall/12-match-end.png',
-    DuelScreen(
-      config: classicConfig,
-      engine: endEngine,
-      driveTimers: false,
-      showCoach: false,
-    ),
-    size: _tiny,
-  );
+  Future<void> shot(String name, Widget home) async {
+    await _capture(tester, services, '$_outSmall/$name.png', home, size: _tiny);
+  }
+
+  await shot('01-home', const HomeScreen(playLoopProgress: 0.84));
+
+  for (var i = 0; i < HowStep.values.length; i++) {
+    await shot(
+      '04-howto-step${i + 1}',
+      HowToPlayScreen(
+        initialStep: i,
+        includeDecoyStep: true,
+        frozenProgress: _howToKeyFrames[i],
+      ),
+    );
+  }
+
+  await shot('05-duel-ready', _duel(classicConfig, _Scene.ready));
+  await shot('06-duel-waiting', _duel(classicConfig, _Scene.waiting));
+  await shot('07-duel-go', _duel(classicConfig, _Scene.signal));
+  await shot('09-duel-foul', _duel(classicConfig, _Scene.foul));
+  await shot('10-duel-scored', _duel(classicConfig, _Scene.scored));
+
+  Future<void> matchEnd(_Scene scene, String name) async {
+    final engine = _engineFor(classicConfig, scene);
+    await services.stats.recordMatch(engine.state);
+    await shot(
+      name,
+      DuelScreen(
+        config: classicConfig,
+        engine: engine,
+        driveTimers: false,
+        showCoach: false,
+      ),
+    );
+  }
+
+  await matchEnd(_Scene.matchEnd, '12-match-end');
+  await matchEnd(_Scene.matchEndBlue, '12-match-end-p2');
 }
 
 Future<void> _captureRr18(WidgetTester tester, AppServices services) async {
@@ -362,15 +385,14 @@ Future<void> _captureRr18(WidgetTester tester, AppServices services) async {
 
   final endBlue = _engineFor(classicConfig, _Scene.matchEndBlue);
   await services.stats.recordMatch(endBlue.state);
-  await shot(
-    'match-end-blue',
-    DuelScreen(
-      config: classicConfig,
-      engine: endBlue,
-      driveTimers: false,
-      showCoach: false,
-    ),
+  final endBlueScreen = DuelScreen(
+    config: classicConfig,
+    engine: endBlue,
+    driveTimers: false,
+    showCoach: false,
   );
+  await shot('match-end-blue', endBlueScreen);
+  await shot('match-end-blue-320', endBlueScreen, size: _tiny);
 }
 
 Future<void> _captureLocales(WidgetTester tester, AppServices services) async {

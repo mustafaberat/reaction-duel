@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -52,6 +53,24 @@ void main() {
     expect(CharacterMood.values, contains(CharacterMood.nextTime));
     expect(CharacterMood.values, contains(CharacterMood.oops));
     expect(CharacterMood.values.map((m) => m.name), isNot(contains('sad')));
+  });
+
+  test('old blob CharacterView is gone', () {
+    const banned = [
+      'CharacterView',
+      'CharacterPainter',
+      '_TrexPainter',
+      '_TriceratopsPainter',
+    ];
+    final hits = <String>[];
+    for (final file in Directory('lib').listSync(recursive: true)) {
+      if (file is! File || !file.path.endsWith('.dart')) continue;
+      final text = file.readAsStringSync();
+      for (final token in banned) {
+        if (text.contains(token)) hits.add('${file.path}: $token');
+      }
+    }
+    expect(hits, isEmpty);
   });
 
   test('match-end dinos shrink on short halves', () {

@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import '../config/tokens.dart';
 import '../engine/duel_state.dart';
 import '../theme/celebration.dart';
-import '../theme/characters.dart';
+import '../theme/dino_art.dart';
 import '../theme/decor.dart';
 import '../theme/tap_burst.dart';
 import 'score_dots.dart';
@@ -244,8 +244,8 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
                         AppDimens.halfBarHeight +
                         AppDimens.halfPadding +
                         widget.edgeInset,
-                    child: CharacterView(
-                      player: widget.player,
+                    child: DinoArt.forPlayer(
+                      widget.player,
                       mood: widget.mood,
                       size: charSize,
                     ),
@@ -410,8 +410,8 @@ class _HalfPadState extends State<HalfPad> with TickerProviderStateMixin {
               ),
             ],
             const SizedBox(height: AppDimens.gapM),
-            CharacterView(
-              player: widget.player,
+            DinoArt.forPlayer(
+              widget.player,
               mood: widget.mood,
               size: AppDimens.characterResult,
             ),

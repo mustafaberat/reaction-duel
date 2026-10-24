@@ -9,6 +9,7 @@ import 'package:reaction_duel/engine/duel_state.dart';
 import 'package:reaction_duel/game/match_end_overlay.dart';
 import 'package:reaction_duel/services/settings_service.dart';
 import 'package:reaction_duel/services/stats_service.dart';
+import 'package:reaction_duel/theme/dino_art.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<AppServices> _services() async {
@@ -115,5 +116,57 @@ void main() {
     await pumpWinner(Player.p2);
     expect(dotColor(), AppColors.triInk);
     expect(dotColor(), isNot(PlayerHue.yellow.ink));
+  });
+
+  testWidgets('match end shows new dino painters with crown on winner', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(750, 1334);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    Future<void> pumpWinner(Player winner) async {
+      await tester.pumpWidget(
+        ReactionDuelApp(
+          services: await _services(),
+          home: MatchEndOverlay(
+            state: _endState(winner: winner),
+            names: const ['Deniz', 'Mert'],
+            series: const [2, 1],
+            onRematch: () {},
+            onChangeSettings: () {},
+            onHome: () {},
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    Future<void> expectArt(Player winner) async {
+      await pumpWinner(winner);
+      expect(find.byType(DinoArt), findsNWidgets(2));
+      final paints = tester
+          .widgetList<CustomPaint>(find.byType(CustomPaint))
+          .map((w) => w.painter)
+          .whereType<DinoPainter>()
+          .toList();
+      expect(paints, hasLength(2));
+      final crown = paints.singleWhere((p) => p.crowned);
+      expect(crown.mood, CharacterMood.happy);
+      expect(
+        crown.kind,
+        winner == Player.p1 ? DinoKind.trex : DinoKind.tri,
+      );
+      final loser = paints.singleWhere((p) => !p.crowned);
+      expect(loser.mood, CharacterMood.nextTime);
+      expect(
+        loser.kind,
+        winner == Player.p1 ? DinoKind.tri : DinoKind.trex,
+      );
+    }
+
+    await expectArt(Player.p1);
+    await expectArt(Player.p2);
   });
 }

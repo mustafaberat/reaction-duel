@@ -12,7 +12,7 @@ import '../config/tokens.dart';
 import '../engine/duel_state.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/celebration.dart';
-import '../theme/characters.dart';
+import '../theme/dino_art.dart';
 import '../theme/decor.dart';
 
 class MatchEndOverlay extends StatelessWidget {
@@ -110,8 +110,24 @@ class _EndCard extends StatelessWidget {
     final bodySize = tiny ? 14.0 : AppType.bodySmall;
     final dinoGap = tiny ? AppDimens.gapM : AppDimens.gapL;
 
+    Widget dino(
+      Player player, {
+      required CharacterMood mood,
+      required double size,
+      required bool flip,
+      bool crowned = false,
+    }) {
+      return DinoArt.forPlayer(
+        player,
+        mood: mood,
+        size: size,
+        flip: flip,
+        crowned: crowned,
+      );
+    }
+
     Widget dinos() => SizedBox(
-      height: winSize + winSize * 0.16,
+      height: DinoArt.heightFor(winSize) + winSize * 0.18,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -122,24 +138,23 @@ class _EndCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: winSize * 0.12),
-                child: CharacterView(
-                  player: winner,
+                padding: EdgeInsets.only(top: winSize * 0.1),
+                child: dino(
+                  winner,
                   mood: CharacterMood.happy,
                   size: winSize,
+                  flip: false,
                   crowned: true,
                 ),
               ),
               SizedBox(width: dinoGap),
               Padding(
-                padding: EdgeInsets.only(
-                  top: winSize * 0.12,
-                  right: loseSize * 0.22,
-                ),
-                child: CharacterView(
-                  player: loser,
+                padding: EdgeInsets.only(top: winSize * 0.16),
+                child: dino(
+                  loser,
                   mood: CharacterMood.nextTime,
                   size: loseSize,
+                  flip: true,
                 ),
               ),
             ],
@@ -164,7 +179,10 @@ class _EndCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: theme.displayMedium!.copyWith(fontSize: nameSize),
+            style: theme.displayMedium!.copyWith(
+              fontSize: nameSize,
+              color: winnerInk,
+            ),
           ),
         ),
       ],

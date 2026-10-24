@@ -180,6 +180,17 @@ void main() {
             frozenProgress: 0.3,
           ),
         );
+        if (size.width <= 375 && size.height <= 667) {
+          for (final label in ['Atla', 'İleri']) {
+            final finder = find.text(label);
+            expect(finder, findsOneWidget);
+            expect(
+              tester.getSize(finder).height,
+              greaterThanOrEqualTo(14),
+              reason: '$label readable at ${size.width}x${size.height}',
+            );
+          }
+        }
       });
 
       testWidgets('setup', (tester) async {
@@ -232,6 +243,33 @@ void main() {
         expect(find.text('Ana sayfa'), findsOneWidget);
       });
     });
+  }
+
+  for (final size in const [Size(320, 568), Size(375, 667)]) {
+    testWidgets(
+      'how-to last-step labels readable at ${size.width.toInt()}',
+      (tester) async {
+        _size(tester, size);
+        await _pump(
+          tester,
+          await _services(),
+          const HowToPlayScreen(
+            initialStep: 4,
+            includeDecoyStep: true,
+            frozenProgress: 0.3,
+          ),
+        );
+        for (final label in ['Kapat', 'Şimdi oyna']) {
+          final finder = find.text(label);
+          expect(finder, findsOneWidget);
+          expect(
+            tester.getSize(finder).height,
+            greaterThanOrEqualTo(14),
+            reason: '$label readable at ${size.width}x${size.height}',
+          );
+        }
+      },
+    );
   }
 
   testWidgets('match end stats stay on screen at 375', (tester) async {

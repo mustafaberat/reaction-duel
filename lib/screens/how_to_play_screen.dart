@@ -174,7 +174,42 @@ class _HowToPlayScreenState extends State<HowToPlayScreen>
               child: LayoutBuilder(
                 builder: (context, c) {
                   final tight = c.maxWidth < 400;
+                  final short = AppLayout.short(
+                    MediaQuery.sizeOf(context).height,
+                  );
+                  final stack = tight || short;
                   final pad = tight ? AppDimens.pageTight : AppDimens.page;
+                  final btnH = short
+                      ? AppDimens.buttonHeightSmall
+                      : AppDimens.buttonHeight;
+                  final skip = last ? l10n.howClose : l10n.howSkip;
+                  final next = last ? l10n.howPlayNow : l10n.howNext;
+                  final nextIcon = last
+                      ? Icons.play_arrow_rounded
+                      : Icons.arrow_forward_rounded;
+                  void onSkip() => Navigator.of(context).maybePop();
+                  void onNext() {
+                    if (last) {
+                      Navigator.of(
+                        context,
+                      ).pushReplacementNamed(AppRoutes.setup);
+                    } else {
+                      _go(index + 1);
+                    }
+                  }
+
+                  Widget skipBtn() => AppButton.secondary(
+                    label: skip,
+                    height: btnH,
+                    onPressed: onSkip,
+                  );
+                  Widget nextBtn() => AppButton(
+                    label: next,
+                    icon: nextIcon,
+                    height: btnH,
+                    onPressed: onNext,
+                  );
+
                   return Padding(
                     padding: EdgeInsets.fromLTRB(
                       pad,
@@ -206,63 +241,16 @@ class _HowToPlayScreenState extends State<HowToPlayScreen>
                         const SizedBox(height: AppDimens.gapS),
                         _StepDots(count: steps.length, index: index),
                         const SizedBox(height: AppDimens.gapM),
-                        if (!last)
+                        if (stack) ...[
+                          nextBtn(),
+                          const SizedBox(height: AppDimens.gapS),
+                          skipBtn(),
+                        ] else
                           Row(
                             children: [
-                              Expanded(
-                                child: AppButton.secondary(
-                                  label: l10n.howSkip,
-                                  compact: tight,
-                                  height: tight
-                                      ? AppDimens.buttonHeightSmall
-                                      : AppDimens.buttonHeight,
-                                  onPressed: () =>
-                                      Navigator.of(context).maybePop(),
-                                ),
-                              ),
+                              Expanded(child: skipBtn()),
                               const SizedBox(width: AppDimens.gapS),
-                              Expanded(
-                                flex: 2,
-                                child: AppButton(
-                                  label: l10n.howNext,
-                                  icon: Icons.arrow_forward_rounded,
-                                  compact: tight,
-                                  height: tight
-                                      ? AppDimens.buttonHeightSmall
-                                      : AppDimens.buttonHeight,
-                                  onPressed: () => _go(index + 1),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          Row(
-                            children: [
-                              Expanded(
-                                child: AppButton.secondary(
-                                  label: l10n.howClose,
-                                  compact: tight,
-                                  height: tight
-                                      ? AppDimens.buttonHeightSmall
-                                      : AppDimens.buttonHeight,
-                                  onPressed: () =>
-                                      Navigator.of(context).maybePop(),
-                                ),
-                              ),
-                              const SizedBox(width: AppDimens.gapS),
-                              Expanded(
-                                flex: 2,
-                                child: AppButton(
-                                  label: l10n.howPlayNow,
-                                  icon: Icons.play_arrow_rounded,
-                                  compact: tight,
-                                  height: tight
-                                      ? AppDimens.buttonHeightSmall
-                                      : AppDimens.buttonHeight,
-                                  onPressed: () => Navigator.of(context)
-                                      .pushReplacementNamed(AppRoutes.setup),
-                                ),
-                              ),
+                              Expanded(flex: 2, child: nextBtn()),
                             ],
                           ),
                       ],

@@ -10,7 +10,7 @@ import '../config/tokens.dart';
 import '../engine/duel_settings.dart';
 import '../engine/duel_state.dart';
 import '../l10n/app_localizations.dart';
-import '../theme/characters.dart';
+import '../theme/dino_art.dart';
 import '../theme/orb_frame.dart';
 import '../theme/tap_burst.dart';
 import 'duel_labels.dart';

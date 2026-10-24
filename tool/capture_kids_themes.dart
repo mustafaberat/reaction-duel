@@ -19,6 +19,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:reaction_duel/app.dart';
 import 'package:reaction_duel/app_scope.dart';
 import 'package:reaction_duel/config/app_config.dart';
+import 'package:reaction_duel/config/tokens.dart';
 import 'package:reaction_duel/engine/clock.dart';
 import 'package:reaction_duel/engine/duel_engine.dart';
 import 'package:reaction_duel/engine/duel_settings.dart';
@@ -120,24 +121,19 @@ void main() {
     final stats = StatsService(prefs);
     final services = AppServices(settings: settings, stats: stats);
     await settings.setLanguage('tr');
-    await _capture(
-      tester,
-      services,
-      '$_outRoot/01-home.png',
-      const HomeScreen(playLoopProgress: 0.84),
-    );
+    await _capture(tester, services, '$_outRoot/01-home.png', _home());
     await _capture(
       tester,
       services,
       '$_outSmall/01-home.png',
-      const HomeScreen(playLoopProgress: 0.84),
+      _home(),
       size: _tiny,
     );
     await _capture(
       tester,
       services,
       '$_outRoot/16-home-play-loop.png',
-      const HomeScreen(playLoopProgress: 0.46),
+      _home(playLoopProgress: 0.46),
     );
     for (final shot in [
       ('home-wait', 0.08),
@@ -149,7 +145,7 @@ void main() {
         tester,
         services,
         '$_outRoot/${shot.$1}.png',
-        HomeScreen(playLoopProgress: shot.$2),
+        _home(playLoopProgress: shot.$2),
       );
     }
   }, timeout: const Timeout(Duration(minutes: 2)));
@@ -192,11 +188,11 @@ Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
   }
 
   await services.settings.setMatch(classicConfig);
-  await shot('01-home', const HomeScreen(playLoopProgress: 0.84));
-  await shot('home-wait', const HomeScreen(playLoopProgress: 0.08));
-  await shot('home-go', const HomeScreen(playLoopProgress: 0.28));
-  await shot('home-press', const HomeScreen(playLoopProgress: 0.46));
-  await shot('home-result', const HomeScreen(playLoopProgress: 0.84));
+  await shot('01-home', _home());
+  await shot('home-wait', _home(playLoopProgress: 0.08));
+  await shot('home-go', _home(playLoopProgress: 0.28));
+  await shot('home-press', _home(playLoopProgress: 0.46));
+  await shot('home-result', _home(playLoopProgress: 0.84));
   await shot('02-match-setup', const MatchSetupScreen());
   await shot('03-settings', const SettingsScreen());
 
@@ -248,7 +244,7 @@ Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
   await shot('14-duel-decoy', _duel(targetConfig, _Scene.decoy));
   await services.settings.setMatch(classicConfig);
   await shot('15-duel-coach', _duel(classicConfig, _Scene.coach, coach: true));
-  await shot('16-home-play-loop', const HomeScreen(playLoopProgress: 0.5));
+  await shot('16-home-play-loop', _home(playLoopProgress: 0.5));
 }
 
 Future<void> _captureSmall(WidgetTester tester, AppServices services) async {
@@ -260,7 +256,7 @@ Future<void> _captureSmall(WidgetTester tester, AppServices services) async {
     await _capture(tester, services, '$_outSmall/$name.png', home, size: _tiny);
   }
 
-  await shot('01-home', const HomeScreen(playLoopProgress: 0.84));
+  await shot('01-home', _home());
 
   for (var i = 0; i < HowStep.values.length; i++) {
     await shot(
@@ -417,12 +413,7 @@ Future<void> _captureLocales(WidgetTester tester, AppServices services) async {
     await services.settings.setLanguage(lang);
     tester.platformDispatcher.localeTestValue = Locale(lang);
 
-    await _capture(
-      tester,
-      services,
-      '$_outLocale/$lang-01.png',
-      const HomeScreen(playLoopProgress: 0.84),
-    );
+    await _capture(tester, services, '$_outLocale/$lang-01.png', _home());
     await _capture(
       tester,
       services,
@@ -582,6 +573,37 @@ DuelEngine _engineFor(MatchConfig config, _Scene scene) {
       break;
   }
   return engine;
+}
+
+HomeScreen _home({double playLoopProgress = 0.84}) {
+  return HomeScreen(
+    playLoopProgress: playLoopProgress,
+    bannerOverride: const _BannerPlaceholder(),
+  );
+}
+
+/// Home banner slot (320×50) — the live AdMob test creative on device.
+class _BannerPlaceholder extends StatelessWidget {
+  const _BannerPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: AppDimens.bannerWidth,
+      height: AppDimens.bannerHeight,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.highlight,
+        borderRadius: BorderRadius.circular(AppDimens.chipRadius),
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: Text(
+        'Test Ad 320x50',
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
 }
 
 Future<void> _capture(

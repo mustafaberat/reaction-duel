@@ -15,10 +15,13 @@ import '../theme/decor.dart';
 import '../theme/dino_art.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({this.playLoopProgress, super.key});
+  const HomeScreen({this.playLoopProgress, this.bannerOverride, super.key});
 
   /// Fixes the home sketch at this point (0–1) for captures.
   final double? playLoopProgress;
+
+  /// Replaces the live AdMob banner (tests / design shots).
+  final Widget? bannerOverride;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -98,50 +101,65 @@ class _HomeScreenState extends State<HomeScreen>
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: AnimatedBuilder(
-                      animation: _loop,
-                      builder: (context, _) {
-                        final t = _loop.value;
-                        final go = t >= 0.18 && t < 0.56;
-                        return Column(
-                          children: [
-                            SizedBox(height: small ? 8 : 22),
-                            _StoneSign(
-                              height: signH,
-                              title: l10n.appTitle,
-                              openMouth: go,
-                              compact: small,
+                    child: LayoutBuilder(
+                      builder: (context, box) {
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                            width: box.maxWidth,
+                            child: AnimatedBuilder(
+                              animation: _loop,
+                              builder: (context, _) {
+                                final t = _loop.value;
+                                final go = t >= 0.18 && t < 0.56;
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(height: small ? 8 : 22),
+                                    _StoneSign(
+                                      height: signH,
+                                      title: l10n.appTitle,
+                                      openMouth: go,
+                                      compact: small,
+                                    ),
+                                    SizedBox(height: small ? 8 : 12),
+                                    Text(
+                                      l10n.homeTagline,
+                                      textAlign: TextAlign.center,
+                                      style: theme.bodyLarge!.copyWith(
+                                        color: AppColors.textMuted,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: small ? 15 : 17,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                    SizedBox(height: small ? 8 : 16),
+                                    Semantics(
+                                      label: l10n.homeTagline,
+                                      image: true,
+                                      excludeSemantics: true,
+                                      child: HomePlayLoop(
+                                        size: cardH,
+                                        waitLabel: l10n.duelWait,
+                                        goLabel: l10n.duelGo,
+                                        slowTime: l10n.duelMs(
+                                          HomePlayLoop.demoSlowMs,
+                                        ),
+                                        fastTime: l10n.duelMs(
+                                          HomePlayLoop.demoFastMs,
+                                        ),
+                                        reduceMotion: reduceMotion,
+                                        frozenProgress: t,
+                                      ),
+                                    ),
+                                    SizedBox(height: small ? 8 : 12),
+                                    const _StatsLine(),
+                                  ],
+                                );
+                              },
                             ),
-                            SizedBox(height: small ? 8 : 12),
-                            Text(
-                              l10n.homeTagline,
-                              textAlign: TextAlign.center,
-                              style: theme.bodyLarge!.copyWith(
-                                color: AppColors.textMuted,
-                                fontWeight: FontWeight.w600,
-                                fontSize: small ? 15 : 17,
-                                height: 1.1,
-                              ),
-                            ),
-                            const Spacer(),
-                            Semantics(
-                              label: l10n.homeTagline,
-                              image: true,
-                              excludeSemantics: true,
-                              child: HomePlayLoop(
-                                size: cardH,
-                                waitLabel: l10n.duelWait,
-                                goLabel: l10n.duelGo,
-                                slowTime: l10n.duelMs(HomePlayLoop.demoSlowMs),
-                                fastTime: l10n.duelMs(HomePlayLoop.demoFastMs),
-                                reduceMotion: reduceMotion,
-                                frozenProgress: t,
-                              ),
-                            ),
-                            SizedBox(height: small ? 8 : 12),
-                            const _StatsLine(),
-                            const Spacer(),
-                          ],
+                          ),
                         );
                       },
                     ),
@@ -152,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen>
                     maxWidth: AppDimens.maxContentWidth,
                   ),
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, small ? 12 : 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
                         AppButton(
@@ -205,7 +223,12 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
                 ),
-                const _HomeBanner(),
+                const SizedBox(height: AppDimens.gapM),
+                FittedBox(
+                  key: const ValueKey<String>('home-banner'),
+                  fit: BoxFit.scaleDown,
+                  child: widget.bannerOverride ?? const _HomeBanner(),
+                ),
               ],
             );
           },

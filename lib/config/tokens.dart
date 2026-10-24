@@ -243,6 +243,10 @@ abstract final class AppDimens {
   static const double hairline = 1;
   static const double maxContentWidth = 520;
 
+  /// Standard AdMob banner (AdSize.banner) used on Home only.
+  static const double bannerWidth = 320;
+  static const double bannerHeight = 50;
+
   static const double buttonOutline = 4;
   static const double cardOutline = 2.5;
   static const double buttonDepth = 6;

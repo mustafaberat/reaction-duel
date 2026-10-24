@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:reaction_duel/app.dart';
 import 'package:reaction_duel/app_scope.dart';
@@ -11,6 +12,7 @@ import 'package:reaction_duel/engine/duel_state.dart';
 import 'package:reaction_duel/engine/rng.dart';
 import 'package:reaction_duel/engine/signal_palette.dart';
 import 'package:reaction_duel/game/duel_screen.dart';
+import 'package:reaction_duel/l10n/app_localizations.dart';
 import 'package:reaction_duel/screens/home_screen.dart';
 import 'package:reaction_duel/screens/how_to_play_screen.dart';
 import 'package:reaction_duel/screens/match_setup_screen.dart';
@@ -246,30 +248,29 @@ void main() {
   }
 
   for (final size in const [Size(320, 568), Size(375, 667)]) {
-    testWidgets(
-      'how-to last-step labels readable at ${size.width.toInt()}',
-      (tester) async {
-        _size(tester, size);
-        await _pump(
-          tester,
-          await _services(),
-          const HowToPlayScreen(
-            initialStep: 4,
-            includeDecoyStep: true,
-            frozenProgress: 0.3,
-          ),
+    testWidgets('how-to last-step labels readable at ${size.width.toInt()}', (
+      tester,
+    ) async {
+      _size(tester, size);
+      await _pump(
+        tester,
+        await _services(),
+        const HowToPlayScreen(
+          initialStep: 4,
+          includeDecoyStep: true,
+          frozenProgress: 0.3,
+        ),
+      );
+      for (final label in ['Kapat', 'Şimdi oyna']) {
+        final finder = find.text(label);
+        expect(finder, findsOneWidget);
+        expect(
+          tester.getSize(finder).height,
+          greaterThanOrEqualTo(14),
+          reason: '$label readable at ${size.width}x${size.height}',
         );
-        for (final label in ['Kapat', 'Şimdi oyna']) {
-          final finder = find.text(label);
-          expect(finder, findsOneWidget);
-          expect(
-            tester.getSize(finder).height,
-            greaterThanOrEqualTo(14),
-            reason: '$label readable at ${size.width}x${size.height}',
-          );
-        }
-      },
-    );
+      }
+    });
   }
 
   testWidgets('match end stats stay on screen at 375', (tester) async {
@@ -295,11 +296,7 @@ void main() {
       tester.platformDispatcher.localeTestValue = Locale(lang);
       addTearDown(tester.platformDispatcher.clearLocaleTestValue);
       final services = await _services(language: lang);
-      await _pump(
-        tester,
-        services,
-        const HomeScreen(playLoopProgress: 0.84),
-      );
+      await _pump(tester, services, const HomeScreen(playLoopProgress: 0.84));
       await _pump(
         tester,
         services,
@@ -338,4 +335,82 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('开始'), findsWidgets);
   });
+
+  testWidgets('home renders bannerOverride in the bottom slot', (tester) async {
+    _size(tester, const Size(375, 667));
+    const banner = SizedBox(
+      key: ValueKey<String>('banner-override'),
+      width: 320,
+      height: 50,
+    );
+    await _pump(
+      tester,
+      await _services(),
+      const HomeScreen(playLoopProgress: 0.84, bannerOverride: banner),
+    );
+
+    expect(
+      find.byKey(const ValueKey<String>('banner-override')),
+      findsOneWidget,
+    );
+    final slot = tester.getRect(
+      find.byKey(const ValueKey<String>('banner-override')),
+    );
+    final home = tester.getRect(find.byType(HomeScreen));
+    expect(slot.width, 320);
+    expect(slot.height, 50);
+    expect(slot.bottom, closeTo(home.bottom, 0.5));
+
+    final play = tester.getRect(find.text('Oyna'));
+    expect(slot.top, greaterThan(play.bottom));
+    final settings = tester.getRect(find.text('Ayarlar'));
+    expect(slot.top, greaterThan(settings.bottom));
+  });
+
+  testWidgets('_HomeBanner renders nothing when no ad is loaded', (
+    tester,
+  ) async {
+    _size(tester, const Size(375, 667));
+    final services = await _services();
+    expect(services.ads.banner.value, isNull);
+    await _pump(tester, services, const HomeScreen(playLoopProgress: 0.84));
+    expect(find.byType(AdWidget), findsNothing);
+    expect(
+      tester.getSize(find.byKey(const ValueKey<String>('home-banner'))),
+      Size.zero,
+    );
+  });
+
+  const banner = SizedBox(
+    key: ValueKey<String>('banner-override'),
+    width: 320,
+    height: 50,
+  );
+  for (final locale in AppLocalizations.supportedLocales) {
+    for (final size in const [Size(320, 568), Size(375, 667)]) {
+      final label =
+          '${locale.languageCode} ${size.width.toInt()}x${size.height.toInt()}';
+      testWidgets('home $label with 320x50 banner does not overflow', (
+        tester,
+      ) async {
+        _size(tester, size);
+        tester.platformDispatcher.localeTestValue = locale;
+        addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+        await _pump(
+          tester,
+          await _services(language: locale.languageCode),
+          const HomeScreen(playLoopProgress: 0.84, bannerOverride: banner),
+        );
+        expect(find.byType(HomeScreen), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey<String>('banner-override')),
+          findsOneWidget,
+        );
+        expect(
+          tester.getSize(find.byKey(const ValueKey<String>('banner-override'))),
+          const Size(320, 50),
+        );
+      });
+    }
+  }
 }

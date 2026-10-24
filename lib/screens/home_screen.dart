@@ -1,4 +1,4 @@
-/// Home: title, a looping two-player sketch, Play, Settings, ?.
+/// Home: stone title sign, a looping two-player sketch, Play, Settings, ?.
 /// The only screen with a banner (rfc §9).
 library;
 
@@ -9,17 +9,68 @@ import '../app_scope.dart';
 import '../components/app_button.dart';
 import '../config/app_config.dart';
 import '../config/tokens.dart';
-import '../engine/duel_state.dart';
 import '../game/home_play_loop.dart';
 import '../l10n/app_localizations.dart';
-import '../theme/characters.dart';
 import '../theme/decor.dart';
+import '../theme/dino_art.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({this.playLoopProgress, super.key});
 
   /// Fixes the home sketch at this point (0–1) for captures.
   final double? playLoopProgress;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _loop = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 5200),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    final frozen = widget.playLoopProgress;
+    if (frozen != null) _loop.value = frozen;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncLoop();
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen old) {
+    super.didUpdateWidget(old);
+    if (old.playLoopProgress != widget.playLoopProgress) {
+      _syncLoop();
+    }
+  }
+
+  void _syncLoop() {
+    final frozen = widget.playLoopProgress;
+    final reduce = AppScope.of(context).settings.reduceMotionFor(context);
+    if (frozen != null) {
+      _loop.stop();
+      _loop.value = frozen;
+    } else if (reduce) {
+      _loop.stop();
+      _loop.value = HomePlayLoop.stillFrame;
+    } else if (!_loop.isAnimating) {
+      _loop.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _loop.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,99 +85,66 @@ class HomeScreen extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final h = constraints.maxHeight;
-            final hero = AppLayout.mascot(h, AppDimens.characterHome);
-            final preview = AppLayout.mascot(h, AppDimens.orbHome);
-            final compact = AppLayout.short(h);
+            final small = h < 600;
+            final signH = small ? 104.0 : 124.0;
+            final cardH = small ? 88.0 : 118.0;
+            final playH = small ? 54.0 : 62.0;
+            final sideH = small ? 44.0 : 50.0;
+            final playFont = small ? 24.0 : 26.0;
+            final sideFont = small ? 15.0 : 17.0;
 
             return Column(
               children: [
                 Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, inner) {
-                      return SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimens.page,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: inner.maxHeight,
-                          ),
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                maxWidth: AppDimens.maxContentWidth,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    height: compact
-                                        ? AppDimens.gapS
-                                        : AppDimens.gapM,
-                                  ),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: _OutlinedTitle(l10n.appTitle),
-                                  ),
-                                  const SizedBox(height: AppDimens.gapS),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppDimens.gapXl,
-                                    ),
-                                    child: Text(
-                                      l10n.homeTagline,
-                                      textAlign: TextAlign.center,
-                                      style: theme.bodyLarge!.copyWith(
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: compact
-                                        ? AppDimens.gapM
-                                        : AppDimens.gapL,
-                                  ),
-                                  FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: _HeroRow(size: hero),
-                                  ),
-                                  SizedBox(
-                                    height: compact
-                                        ? AppDimens.gapM
-                                        : AppDimens.gapL,
-                                  ),
-                                  Semantics(
-                                    label: l10n.homeTagline,
-                                    image: true,
-                                    excludeSemantics: true,
-                                    child: HomePlayLoop(
-                                      size: preview,
-                                      waitLabel: l10n.duelWait,
-                                      goLabel: l10n.duelGo,
-                                      slowTime: l10n.duelMs(
-                                        HomePlayLoop.demoSlowMs,
-                                      ),
-                                      fastTime: l10n.duelMs(
-                                        HomePlayLoop.demoFastMs,
-                                      ),
-                                      reduceMotion: reduceMotion,
-                                      frozenProgress: playLoopProgress,
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppDimens.gapM),
-                                  const _StatsLine(),
-                                  SizedBox(
-                                    height: compact
-                                        ? AppDimens.gapS
-                                        : AppDimens.gapM,
-                                  ),
-                                ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: AnimatedBuilder(
+                      animation: _loop,
+                      builder: (context, _) {
+                        final t = _loop.value;
+                        final go = t >= 0.18 && t < 0.56;
+                        return Column(
+                          children: [
+                            SizedBox(height: small ? 8 : 22),
+                            _StoneSign(
+                              height: signH,
+                              title: l10n.appTitle,
+                              openMouth: go,
+                              compact: small,
+                            ),
+                            SizedBox(height: small ? 8 : 12),
+                            Text(
+                              l10n.homeTagline,
+                              textAlign: TextAlign.center,
+                              style: theme.bodyLarge!.copyWith(
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w600,
+                                fontSize: small ? 15 : 17,
+                                height: 1.1,
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    },
+                            const Spacer(),
+                            Semantics(
+                              label: l10n.homeTagline,
+                              image: true,
+                              excludeSemantics: true,
+                              child: HomePlayLoop(
+                                size: cardH,
+                                waitLabel: l10n.duelWait,
+                                goLabel: l10n.duelGo,
+                                slowTime: l10n.duelMs(HomePlayLoop.demoSlowMs),
+                                fastTime: l10n.duelMs(HomePlayLoop.demoFastMs),
+                                reduceMotion: reduceMotion,
+                                frozenProgress: t,
+                              ),
+                            ),
+                            SizedBox(height: small ? 8 : 12),
+                            const _StatsLine(),
+                            const Spacer(),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
                 ConstrainedBox(
@@ -134,34 +152,54 @@ class HomeScreen extends StatelessWidget {
                     maxWidth: AppDimens.maxContentWidth,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimens.page,
-                      0,
-                      AppDimens.page,
-                      AppDimens.gapM,
-                    ),
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, small ? 12 : 18),
                     child: Column(
                       children: [
                         AppButton(
                           label: l10n.play,
                           icon: Icons.play_arrow_rounded,
+                          height: playH,
+                          fontSize: playFont,
+                          iconSize: small ? 26 : 28,
+                          foreground: Colors.white,
+                          borderColor: AppColors.outline,
+                          radius: 22,
                           onPressed: () =>
                               Navigator.of(context).pushNamed(AppRoutes.setup),
                         ),
-                        const SizedBox(height: AppDimens.gapS),
-                        AppButton.secondary(
-                          label: l10n.settings,
-                          icon: Icons.settings_outlined,
-                          onPressed: () =>
-                              Navigator.of(context)
-                                  .pushNamed(AppRoutes.settings),
-                        ),
-                        const SizedBox(height: AppDimens.gapS),
-                        AppButton.secondary(
-                          label: l10n.howToPlay,
-                          icon: Icons.question_mark_rounded,
-                          onPressed: () =>
-                              Navigator.of(context).pushNamed(AppRoutes.howTo),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButton.secondary(
+                                label: l10n.settings,
+                                icon: Icons.settings_outlined,
+                                height: sideH,
+                                fontSize: sideFont,
+                                compact: true,
+                                iconSize: 21,
+                                radius: 18,
+                                onPressed: () =>
+                                    Navigator.of(context)
+                                        .pushNamed(AppRoutes.settings),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: AppButton.secondary(
+                                label: l10n.howToPlay,
+                                icon: Icons.question_mark_rounded,
+                                height: sideH,
+                                fontSize: sideFont,
+                                compact: true,
+                                iconSize: 20,
+                                radius: 18,
+                                onPressed: () =>
+                                    Navigator.of(context)
+                                        .pushNamed(AppRoutes.howTo),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -177,80 +215,214 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _OutlinedTitle extends StatelessWidget {
-  const _OutlinedTitle(this.text);
+class _StoneSign extends StatelessWidget {
+  const _StoneSign({
+    required this.height,
+    required this.title,
+    required this.openMouth,
+    required this.compact,
+  });
 
-  final String text;
+  final double height;
+  final String title;
+  final bool openMouth;
+  final bool compact;
 
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: Theme.of(context).textTheme.displayLarge!.copyWith(
-        fontSize: AppType.hero,
-        height: AppType.heroHeight,
-        color: AppColors.displaySkyFill,
-        letterSpacing: AppType.displayTracking,
-        shadows: AppType.displaySkyHalo,
-      ),
-    );
-  }
-}
-
-class _HeroRow extends StatelessWidget {
-  const _HeroRow({required this.size});
-
-  final double size;
+  static const Color _slab = Color(0xFFC9C0AE);
+  static const Color _shade = Color(0xFFADA390);
+  static const Color _carved = Color(0xFF4A3C28);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CharacterView(
-          player: Player.p1,
-          mood: CharacterMood.ready,
-          size: size,
-          flip: true,
-        ),
-        const SizedBox(width: AppDimens.gapS),
-        const _VsBadge(),
-        const SizedBox(width: AppDimens.gapS),
-        CharacterView(player: Player.p2, mood: CharacterMood.ready, size: size),
-      ],
-    );
-  }
-}
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sw = constraints.maxWidth.clamp(0.0, AppDimens.maxContentWidth);
+        final ds = sw * 0.47;
+        final peek = ds * 0.52;
+        final total = height + peek;
+        final handW = 22.0;
+        final handH = 16.0;
 
-class _VsBadge extends StatelessWidget {
-  const _VsBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 54,
-      height: 54,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: AppColors.accent,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.outline, width: 3.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.outline.withValues(alpha: 0.28),
-            offset: const Offset(0, 3),
-            blurRadius: 0,
+        return SizedBox(
+          width: sw,
+          height: total,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: sw * 0.03,
+                top: 0,
+                width: ds,
+                height:
+                    ds *
+                    DinoPainter.viewSize.height /
+                    DinoPainter.viewSize.width,
+                child: DinoArt.trex(openMouth: openMouth),
+              ),
+              Positioned(
+                right: sw * 0.03,
+                top: 0,
+                width: ds,
+                height:
+                    ds *
+                    DinoPainter.viewSize.height /
+                    DinoPainter.viewSize.width,
+                child: const DinoArt.tri(flip: true),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: height,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _slab,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(26),
+                      topRight: Radius.circular(30),
+                      bottomRight: Radius.circular(24),
+                      bottomLeft: Radius.circular(32),
+                    ),
+                    border: Border.all(color: AppColors.outline, width: 4),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x593A280C),
+                        offset: Offset(0, 5),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(22),
+                      topRight: Radius.circular(26),
+                      bottomRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(28),
+                    ),
+                    child: Stack(
+                      children: [
+                        const Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: 8,
+                          child: ColoredBox(color: _shade),
+                        ),
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: sw * 0.72,
+                                ),
+                                child: Text(
+                                  title,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  style: TextStyle(
+                                    fontFamily: AppFonts.body,
+                                    fontFamilyFallback: const [
+                                      AppFonts.body,
+                                      AppFonts.ja,
+                                      AppFonts.ko,
+                                      AppFonts.zh,
+                                    ],
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: compact ? 36 : 44,
+                                    height: 0.95,
+                                    color: _carved,
+                                    shadows: const [
+                                      Shadow(
+                                        color: Color(0xFFE8E1D2),
+                                        offset: Offset(0, 2),
+                                      ),
+                                      Shadow(
+                                        color: Color(0xFF8C826E),
+                                        offset: Offset(0, -1),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              _Hand(
+                left: sw * 0.03 + ds * 0.48,
+                bottom: height - 11,
+                width: handW,
+                height: handH,
+                color: DinoPalette.trex.body,
+              ),
+              _Hand(
+                left: sw * 0.03 + ds * 0.62,
+                bottom: height - 11,
+                width: handW,
+                height: handH,
+                color: DinoPalette.trex.body,
+              ),
+              _Hand(
+                right: sw * 0.03 + ds * 0.50,
+                bottom: height - 11,
+                width: handW,
+                height: handH,
+                color: DinoPalette.tri.body,
+              ),
+              _Hand(
+                right: sw * 0.03 + ds * 0.30,
+                bottom: height - 11,
+                width: handW,
+                height: handH,
+                color: DinoPalette.tri.body,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Text(
-        'VS',
-        style: Theme.of(context).textTheme.titleLarge!.copyWith(
-          fontWeight: FontWeight.w800,
-          fontSize: 18,
-          color: AppColors.onAccent,
-          height: 1,
+        );
+      },
+    );
+  }
+}
+
+class _Hand extends StatelessWidget {
+  const _Hand({
+    required this.bottom,
+    required this.width,
+    required this.height,
+    required this.color,
+    this.left,
+    this.right,
+  });
+
+  final double? left;
+  final double? right;
+  final double bottom;
+  final double width;
+  final double height;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: left,
+      right: right,
+      bottom: bottom,
+      width: width,
+      height: height,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.outline, width: 3.5),
         ),
       ),
     );
@@ -275,11 +447,27 @@ class _StatsLine extends StatelessWidget {
           if (best != null) l10n.homeRecord(best),
           if (stats.totalMatches > 0) l10n.homeMatches(stats.totalMatches),
         ];
-        return Text(
-          parts.join(AppGlyphs.separator),
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium!
-              .copyWith(fontFeatures: AppFonts.tabular),
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CustomPaint(painter: TrophyPainter()),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                parts.join(AppGlyphs.separator),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: AppFonts.tabular,
+                ),
+              ),
+            ),
+          ],
         );
       },
     );

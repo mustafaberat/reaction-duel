@@ -8,6 +8,7 @@ import 'package:reaction_duel/game/home_play_loop.dart';
 import 'package:reaction_duel/screens/home_screen.dart';
 import 'package:reaction_duel/services/settings_service.dart';
 import 'package:reaction_duel/services/stats_service.dart';
+import 'package:reaction_duel/theme/dino_art.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void _size(WidgetTester tester, Size logical) {
@@ -22,21 +23,25 @@ void _size(WidgetTester tester, Size logical) {
 Future<void> _pumpLoop(
   WidgetTester tester, {
   required double progress,
-  double size = 160,
+  double size = 118,
+  double width = 300,
   bool reduceMotion = false,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
         body: Center(
-          child: HomePlayLoop(
-            size: size,
-            waitLabel: 'WAIT',
-            goLabel: 'GO!',
-            slowTime: '361 ms',
-            fastTime: '214 ms',
-            reduceMotion: reduceMotion,
-            frozenProgress: progress,
+          child: SizedBox(
+            width: width,
+            child: HomePlayLoop(
+              size: size,
+              waitLabel: 'WAIT',
+              goLabel: 'GO!',
+              slowTime: '361 ms',
+              fastTime: '214 ms',
+              reduceMotion: reduceMotion,
+              frozenProgress: progress,
+            ),
           ),
         ),
       ),
@@ -72,6 +77,7 @@ void main() {
     expect(find.text('GO!'), findsNothing);
     expect(find.text('361 ms'), findsNothing);
     expect(find.text('214 ms'), findsNothing);
+    expect(find.text(HomePlayLoop.pendingTime), findsNWidgets(2));
     expect(tester.takeException(), isNull);
   });
 
@@ -81,13 +87,15 @@ void main() {
     expect(find.text('WAIT'), findsNothing);
     expect(find.text('361 ms'), findsNothing);
     expect(find.text('214 ms'), findsNothing);
+    expect(find.text(HomePlayLoop.pendingTime), findsNWidgets(2));
   });
 
-  testWidgets('press frame shows the faster time', (tester) async {
+  testWidgets('press frame keeps pending chips', (tester) async {
     await _pumpLoop(tester, progress: 0.46);
     expect(find.text('GO!'), findsOneWidget);
-    expect(find.text('214 ms'), findsOneWidget);
+    expect(find.text('214 ms'), findsNothing);
     expect(find.text('361 ms'), findsNothing);
+    expect(find.text(HomePlayLoop.pendingTime), findsNWidgets(2));
   });
 
   testWidgets('result frame shows both times', (tester) async {
@@ -119,11 +127,17 @@ void main() {
     expect(find.text('214 ms'), findsOneWidget);
   });
 
-  testWidgets('card stays inside its square on a tiny phone', (tester) async {
+  testWidgets('card stays inside its strip on a tiny phone', (tester) async {
     _size(tester, const Size(320, 568));
-    await _pumpLoop(tester, progress: HomePlayLoop.stillFrame, size: 80);
+    await _pumpLoop(
+      tester,
+      progress: HomePlayLoop.stillFrame,
+      size: 80,
+      width: 280,
+    );
     final box = tester.getSize(find.byType(HomePlayLoop));
-    expect(box, const Size(80, 80));
+    expect(box.width, 280);
+    expect(box.height, 85);
     expect(tester.takeException(), isNull);
   });
 
@@ -156,6 +170,31 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.text('BEKLE'), findsOneWidget);
     expect(find.text('BAS!'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('home shows both dino painters and side-by-side actions', (
+    tester,
+  ) async {
+    _size(tester, const Size(375, 667));
+    await tester.pumpWidget(
+      ReactionDuelApp(
+        services: await _services(),
+        home: const HomeScreen(playLoopProgress: HomePlayLoop.stillFrame),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    final dinos = tester.widgetList<DinoArt>(find.byType(DinoArt)).toList();
+    expect(dinos, hasLength(2));
+    expect(dinos.any((d) => d.kind == DinoKind.trex && !d.flip), isTrue);
+    expect(dinos.any((d) => d.kind == DinoKind.tri && d.flip), isTrue);
+
+    final settings = tester.getCenter(find.text('Ayarlar'));
+    final howTo = tester.getCenter(find.text('Nasıl oynanır'));
+    expect(settings.dy, closeTo(howTo.dy, 6));
+    expect(settings.dx, lessThan(howTo.dx));
     expect(tester.takeException(), isNull);
   });
 }

@@ -193,6 +193,10 @@ Future<void> _captureTheme(WidgetTester tester, AppServices services) async {
 
   await services.settings.setMatch(classicConfig);
   await shot('01-home', const HomeScreen(playLoopProgress: 0.84));
+  await shot('home-wait', const HomeScreen(playLoopProgress: 0.08));
+  await shot('home-go', const HomeScreen(playLoopProgress: 0.28));
+  await shot('home-press', const HomeScreen(playLoopProgress: 0.46));
+  await shot('home-result', const HomeScreen(playLoopProgress: 0.84));
   await shot('02-match-setup', const MatchSetupScreen());
   await shot('03-settings', const SettingsScreen());
 

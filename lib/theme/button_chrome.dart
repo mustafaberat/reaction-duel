@@ -14,12 +14,14 @@ class ThemedButtonFrame extends StatelessWidget {
     required this.height,
     required this.expand,
     required this.child,
+    this.radius = AppDimens.buttonRadius,
     super.key,
   });
 
   final double height;
   final bool expand;
   final Widget child;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class ThemedButtonFrame extends StatelessWidget {
     if (AppShadows.button.isNotEmpty) {
       body = DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
+          borderRadius: BorderRadius.circular(radius),
           boxShadow: AppShadows.button,
         ),
         child: child,

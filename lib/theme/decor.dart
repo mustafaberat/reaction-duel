@@ -72,8 +72,8 @@ class DecorPainter extends CustomPainter {
     );
     if (kind == DecorKind.half) return;
     final home = kind == DecorKind.home;
-    final groundY = home ? size.height * 0.88 : size.height * 0.94;
-    final dip = home ? 18.0 : 10.0;
+    final groundY = home ? size.height * 0.97 : size.height * 0.94;
+    final dip = home ? 8.0 : 10.0;
     final ground = Path()
       ..moveTo(0, groundY)
       ..quadraticBezierTo(

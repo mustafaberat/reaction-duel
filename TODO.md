@@ -11,3 +11,12 @@
 - [x] Ses ve titreşim tamamen kaldırıldı:
   - `FeedbackService` (tık sesi, puan/faul titreşimi, sinyal titreşimi) ve `AppServices.feedback` silindi; düello ekranındaki çağrılar kaldırıldı.
   - Ayarlardan "Ses", "Titreşim" ve "Titreşimli sinyal" seçenekleri, SharedPreferences anahtarları (`sound`, `haptics`, `signal_vibration`) ve ilgili çeviriler kaldırıldı.
+
+## APK boyutu
+- [ ] Release APK ~57 MB, biraz küçültülmeli (şimdilik değil):
+  - Evrensel APK 3 ABI içeriyor (armeabi-v7a, arm64-v8a, x86_64); test için `flutter build apk --release --split-per-abi` ile her biri ~18–20 MB olur. Play'e zaten AAB gidiyor (ABI'ye göre bölünür).
+  - En büyük fontlar: ZenMaruGothic-Bold ~3.5 MB, Jua ~2.1 MB, ZCOOLKuaiLe ~1.5 MB (ja/ko/zh için); yalnızca kullanılan karakterlere alt küme (subset) yap veya gerekmeyen ağırlıkları çıkar.
+  - `play/` görselleri pakete girmiyor, sorun değil; `assets/` altını kontrol et.
+
+## Android release açılış hatası (çözüldü)
+- [x] Release APK splash'te takılıyordu: R8, shared_preferences_android 2.5.x'in JNI ile çağrılan Kotlin metodlarını (ve kotlin.coroutines sınıflarını) siliyordu → `SharedPreferences.getInstance` NoSuchMethodError → `runApp` hiç çalışmıyordu. Ayrıca WorkManager `WorkDatabase` (google_mobile_ads) R8 yüzünden açılışta çöküyordu. `android/app/proguard-rules.pro` keep kuralları + `lib/app.dart` `bootstrap()` başlangıç korumaları (hata/zaman aşımı runApp'i engellemez; prefs açılamazsa bellek içi varsayılanlarla açılır).
